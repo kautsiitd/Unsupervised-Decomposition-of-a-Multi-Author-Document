@@ -29,6 +29,8 @@ max_features = 1500
 seg_size  = 30
 	# choosing top vital segment in a class
 best_per  = .8
+	# number of sentence to test on from final model
+test_size = 1000
 
 '''###########################'''
 '''##########Step 1###########'''
@@ -202,12 +204,12 @@ vec_seg_cls(sparse matrix) = [[ [0,1,1,0,1,1,1,0,..... max_features=1500],[vecto
 			   				 [ [0,0,1,1,0,0,1,0,..... max_features=1500],[vector of segment 2],.... cluster 1]
 			   				 ....
 			   				 number of books
-			  				 ]										vector representation of each segment in each cluster
+			  				 ]								vector representation of each segment in corresponding cluster
 vec_seg_new(sparse matrix) = [[0,1,1,0,1,1,1,0,..... max_features=1500]
 							  [0,0,1,1,0,0,1,0,..... max_features=1500]
 							  ....
 							  number of segments
-							 ]										vector representation of each segment
+							 ]								vector representation of each segment
 '''
 model2		  = CV(max_features = max_limit)
 model2 		  = model2.fit(merged_data)
@@ -218,71 +220,112 @@ print "STEP 4 done"
 '''Step 4'''
 '''######'''
 
-'''######'''
-'''Step 5'''
-'''######'''
-# Applying SegmentElicitation Procedure
+'''#####################################'''
+'''###############Step 5################'''
+'''Applying SegmentElicitation Procedure'''
+'''#####################################'''
+'''
+vec_seg_cls(dense)  = vector representation of each segment in corresponding cluster
+vec_seg_new(dense) 	= vector representation of each segment
+word_cls_frq = frequency of feature words(max_features=1500) in each cluster
+			 = [[25,100,13,15,253,.... number of feature words] cluster 0
+			    [65,200,123,10,15,.... number of feature words] cluster 1
+			    ....
+			    number of clusters/books
+			   ]
+word_frq 	 = each feature word(max_features=1500) frequency in whole document
+			 = [150,550,260,1021,.... number of feature words(max_features=1500)]
+post_p_w	 = posterior probability of each feature word in each cluster/book
+			 = [ [0.3,0.25,.... number of clusters/books] word 1
+				 [0.1,0.15,.... number of clusters/books] word 2
+				 ....
+				 number of feature words(max_features=1500)
+			   ]
+post_p_seg	 = posterior probability of each segment in each cluster
+			 = [ [[0.85,0.01,0.1,... number of books,0(segment number)], [segment 2],.... number of segmensin this cluster] cluster 1 
+			   	 [[0.85,0.01,0.1,... number of books,1(segment number)], [segment 2],.... number of segmensin this cluster] cluster 2 
+			   	 ....
+			   	 number of clusters/books
+			   ]
+best_seg	 = 80% of post_p_seg for each cluster in same format
+			 = [ [[0.85,0.01,0.1,... number of books,0(segment number)], [segment 2],.... number of segmensin this cluster] cluster 1 
+			   	 [[0.85,0.01,0.1,... number of books,1(segment number)], [segment 2],.... number of segmensin this cluster] cluster 2 
+			   	 ....
+			   	 number of clusters/books
+			   ]
+'''
 	# calculating posterior probability of words
 		# variables
 post_p_w 	  = []
-dense_array   = [i.toarray() for i in vec_seg_cls]
-dense_array1  = vec_seg_new.toarray()
-word_cls_frq  = [[sum(word_f) for word_f in zip(*cluster)] for cluster in dense_array]
+vec_seg_cls   = [i.toarray() for i in vec_seg_cls]
+vec_seg_new   = vec_seg_new.toarray()
+word_cls_frq  = [[sum(word_f) for word_f in zip(*cluster)] for cluster in vec_seg_cls]
 word_frq 	  = [sum(word_f) for word_f in zip(*word_cls_frq)]
 		# main
-for i in range(max_limit):
+for i in range(max_features):
 	post_p_w.append([])
 	for j in range(number_books):
 		post_p_w[i].append(float(word_cls_frq[j][i])/word_frq[i])
-# for i in post_p_w:
-# 	print i
 	# calculating posterior probability of segments in each cluster
 post_p_seg = [[] for i in range(number_books)]
 		# jth segment ith cluster
 for j in range(number_seg):
-	cls_num = map(lambda x: (x),label_p[j]) . index(max(label_p[j]))
+	cls_num = label_p[j]
 	temp = []
 	for i in range(number_books):
-		temp.append( sum([math.log(post_p_w[k][i]) for k in range(max_limit) if (dense_array1[j][k]>0 and post_p_w[k][i]>0) ]) )
+		summation = 0
+		for k in range(max_features):
+			if (vec_seg_new[j][k]>0 and post_p_w[k][i]>0):
+				summation += math.log(post_p_w[k][i])
+		temp.append(summation)
 	temp.append(j)
 	post_p_seg[cls_num].append(temp)
 	# print post_p_seg[cls_num][-1]
-	# finding vital segment for each cluster
-sort_seg = [sorted(post_p_seg[i], key=lambda x:-x[i]+max(x[:i]+x[i+1:-1]))[:int(best_per*len(post_p_seg[i]))] for i in range(number_books)]
+'''################finding vital segment for each cluster####################'''
+'''Choosing best 80%(best_per) of segments to represent corresponding cluster'''
+'''##########################################################################'''
+best_seg = []
+for i in range(number_books):
+	end = int(best_per*len(post_p_seg[i]))
+	sort_seg = sorted(post_p_seg[i], key=lambda x:-x[i]+max(x[:i]+x[i+1:-1]))
+	best_seg.append(sort_seg[:end])
 print "STEP 5 done"
 '''######'''
 '''Step 5'''
 '''######'''
 
-'''######'''
-'''Step 6'''
-'''######'''
-# representing vital segments in form of original minimum 3 frq words for each corresponding cluster
-	# vital_seg = [cluster][seg][binary word representation]
-dense_array2 = vec_seg.toarray()
-vital_seg= [ [dense_array2[seg[-1]] for seg in sort_seg[cluster_n]] for cluster_n in range(number_books)]
+'''#################################################################################################'''
+'''#########################################Step 6##################################################'''
+'''Representing vital segments in form of minimum 3 frq feature words for each corresponding cluster'''
+'''#################################################################################################'''
+'''
+vec_seg(dense) = vector representation of each segment
+vital_seg = [ [ [0,1,1,0,0,1,1,1,0,0,0,... ~11000 feature words(>3 frq)], [0,1,1,0,0,1,1,1,0,0,0,...],.... number of vital segments] cluster 0
+			  [ [0,1,1,0,0,1,1,1,0,0,0,... ~11000 feature words(>3 frq)], [0,1,1,0,0,1,1,1,0,0,0,...],.... number of vital segments] cluster 1
+			  ....
+			  number of clusters
+			]
+'''
+vec_seg = vec_seg.toarray()
+vital_seg = []
+for cluster_n in range(number_books):
+	for seg in best_seg[cluster_n]:
+		vital_seg.append(dense_array2[seg[-1]])
 print "STEP 6 done"
 '''######'''
 '''Step 6'''
 '''######'''
 
-'''######'''
-'''Step 7'''
-'''######'''
-# Applying Bernouli Naive-Bayesian model to learn a classifier on vital_seg
+'''###############################################################################'''
+'''#################################Step 7########################################'''
+'''Training using Bernouli Naive-Bayesian model to learn a classifier on vital_seg'''
+'''###############################################################################'''
 train = []
 labels= []
-	# using nltk
-		# for cluster_n in range(number_books): 
-		# 	for seg in vital_seg[cluster_n]:
-				# seg_l = seg.tolist()
-				# temp = {i:seg_l[i] for i in range(number_f_w)}
-			# train.append((temp ,cluster_n))
-	# using sklearn
 for cluster_n in range(number_books): 
 	for seg in vital_seg[cluster_n]:
 		train.append(seg.tolist())
-		labels.append(mapping[cluster_n])
+		labels.append(cluster_n)
 model3 = BNB(binarize = None, fit_prior = False)
 model3 = model3.fit(train, labels)
 print "STEP 7 done"
@@ -290,40 +333,21 @@ print "STEP 7 done"
 '''Step 7'''
 '''######'''
 
-'''######'''
-'''Step 8'''
-'''######'''
-# classfying sentences on trained classifier and calculating score
-	# using nltk
-		# vec_sen = model.transform(merged_data).toarray()
-		# for sen in vec_sen:
-		# 	temp = {i:sen[i] for i in range(number_f_w)}
-		# 	print classifier.prob_classify(temp).prob(0),classifier.prob_classify(temp).prob(1)
-	# using sklearn
-for label in label_sen:
-	label = mapping[label]
-		# for segments
-test_size = len(vec_seg.toarray())
-vec_sen = model.transform(merged_data)
-# set_a   = zip(vec_sen,label_sen[:test_size])
-# shuffle(set_a)
-temp = model3.predict_proba(vec_seg)
-predicted = [map(lambda x: (x),temp[i]).index(max(temp[i])) for i in range(test_size)]
-# for i in range(test_size):
-# 	print temp[i], org_label[i], map(lambda x: (x),temp[i]).index(max(temp[i]))
-# print model3.score(zip(*set_a)[0], zip(*set_a)[1])
-print model3.score(vec_seg, org_label)
-print labels.count(0),labels.count(1),org_label.count(0),org_label.count(1),predicted.count(0),predicted.count(1)
+'''################################################################'''
+'''##########################Step 8################################'''
+'''classfying sentences on trained classifier and calculating score'''
+'''################################################################'''
+test_sentences = []
+gold_labels	   = []
+for i in range(test_size):
+	temp = rnd(0,number_sen)
+	test_sentences.append(merged_data[temp])
+	gold_labels.append(label_sen[temp])
+vec_test_sen = model.transform(test_sentences)
+# temp = model3.predict_proba(vec_test_sen)
+# predicted = [map(lambda x: (x),temp[i]).index(max(temp[i])) for i in range(test_size)]
+print model3.score(vec_test_sen, gold_labels)
 print "STEP 8 done"
 '''######'''
 '''Step 8'''
 '''######'''
-
-# test_size = 1000
-# vec_sen = model.transform(merged_data[:1000])
-# temp = model3.predict_proba(vec_sen)
-# predicted = [map(lambda x: (x),temp[i]).index(max(temp[i])) for i in range(test_size)]
-# org_label = label_sen[:test_size]
-# print model3.score(vec_sen, org_label)
-# print labels.count(0),labels.count(1),org_label.count(0),org_label.count(1),predicted.count(0),predicted.count(1)
-# print "STEP 8 done"
