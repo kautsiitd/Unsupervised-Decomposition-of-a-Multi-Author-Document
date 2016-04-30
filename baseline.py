@@ -24,7 +24,7 @@ print "Import Done"
 # variables
 V 		  = 200
 	# number of most frequent features
-max_limit = 1500
+max_features = 1500
 	# segment size
 seg_size  = 30
 	# choosing top vital segment in a class
@@ -39,7 +39,10 @@ books_names = ['a',b','c',....]
 merged_data = ['sentence1','sentence2',.....]
 label_sen   = [0,0,0,1,2,.....]								label of sentence in merged_data
 segments    = ['segment1','segment2',.....]
-label_in_seg= [[0,0,0,1,2,0,0,..],[0,1,1,2,1,0,1,..],....]	label of sentences in individual segments
+label_in_seg= [[0,0,0,1,2,0,0,..]
+			   [0,1,1,2,1,0,1,..]
+			    ....
+			  ]	label of sentences in individual segments
 label_seg   = [0,1,1,0,2,0,...]								book with max count in segment
 '''
 # file names
@@ -48,7 +51,8 @@ label_seg   = [0,1,1,0,2,0,...]								book with max count in segment
 	# MD-TF
 	# GC-MD
 	# Becker-Posner
-folder 		= "dataset/GC-MD-TF"
+	# GC-MD-TF
+folder 		= "dataset/GC-MD"
 books_names = os.listdir(folder)
 merged_data	= []
 label_sen	= []
@@ -95,6 +99,9 @@ for i in range(number_seg):
 '''###########################'''
 '''Printing Results of merging'''
 '''###########################'''
+'''
+org_seg = [430,405,...,150]									number of pure segments by author i, last one for mixed
+'''
 	# calculating segments by each author
 org_seg		= [0 for i in range(number_books+1)]
 for i in range(number_seg):
@@ -138,61 +145,70 @@ print "STEP 2 done"
 '''Unsupervised labelling of segments using GMM'''
 '''############################################'''
 '''
-label_p = []
+label_p = [0,1,0,1,2,0,1,.... number of segments] 				predicted label for each segment
+count_mapping = [[20,3,450,... number of books]					how much predicted label match to original label(max count)
+				 [410,5,10,..]
+				 ...
+				 number of books 
+				]
+mapping 	  = [2,0,1,5,3,...]									What predicted label match to in original label
+clusters	  = [['sentence','sentence',..... in cluster 0]
+				 ['sentence','sentence',..... in cluster 1]
+				 ....
+				 number of books
+				]
 '''
-model1		  = GMM(n_components = number_books, n_iter = 1000, covariance_type = 'diag', n_init = 5, verbose = 1)
-model1		  = model1.fit(vec_seg.toarray())
-label_p 	  = model1.predict_proba(vec_seg.toarray())
-	# calculating recall
-# recall_clusters= dict()
-# temp = [[[0 ,0] ,[0 ,0]] for i in range(number_books)]
-# for i in itertools.permutations(range(number_books)):
-# 	temp_mapping = dict(zip(range(number_books),i))
-# for i in range(len(label_p)):
-# 	predicted = label_p[i]).index(max(label_p[i])
-# 	given_l = org_label[i]
-# 	if()
-# 	if(label_p[i][0] == 1):
-# 		if(float(label_seg[i].count(0))/len(label_seg[i]) > .99):
-# 			recall_cluster [0][0] += 1
-# 			recall_cluster1[1][1] += 1
-# 		else:
-# 			recall_cluster [0][1] += 1
-# 			if(float(label_seg[i].count(1))/len(label_seg[i]) > .99):
-# 				recall_cluster1[1][0] += 1
-# 			else:
-# 				recall_cluster1[1][1] += 1
-# 	else:
-# 		if(float(label_seg[i].count(1))/len(label_seg[i]) > .99):
-# 			recall_cluster [1][0] += 1
-# 			recall_cluster1[0][1] += 1
-# 		else:
-# 			recall_cluster [1][1] += 1
-# 			if(float(label_seg[i].count(0))/len(label_seg[i]) > .99):
-# 				recall_cluster1[0][0] += 1
-# 			else:
-# 				recall_cluster1[0][1] += 1
-# print recall_cluster, recall_cluster1
-# if sum(zip(*recall_cluster)[0]) < sum(zip(*recall_cluster1)[0]):
-# 	mapping = [1,0]
-# 	print "Recall: ",float(recall_cluster1[0][0])/org_seg[0],float(recall_cluster1[1][0])/org_seg[1]
-# 	print "Pricision: ",float(recall_cluster1[0][0])/sum(recall_cluster1[0]),float(recall_cluster1[1][0])/sum(recall_cluster1[1])
-# else:
-# 	print "Recall: ",float(recall_cluster[0][0])/org_seg[0],float(recall_cluster[1][0])/org_seg[1]
-# 	print "Pricision: ",float(recall_cluster[0][0])/sum(recall_cluster[0]),float(recall_cluster[1][0])/sum(recall_cluster[1])
-	# putting segments in corresponding cluster
-clusters	  = [[] for i in range(number_books)]
-[clusters[map(lambda x: (x),label_p[i]) . index(max(label_p[i]))].append(segments[i]) for i in range(number_seg)]
-print "STEP 3 done"
+model1		  = GMM(n_components = number_books, n_iter = 1000, covariance_type = 'diag', n_init = 3, verbose = 1)
+label_p 	  = model1.fit_predict(vec_seg.toarray())
+	# finding mapping
+count_mapping = [ [0 for j in range(number_books)] for i in range(number_books)]
+for i,j in zip(label_p,label_seg):
+	count_mapping[i][j] += 1
+mapping = []
+for i in range(number_books):
+	max_frq = max(set(count_mapping[i]), key=count_mapping[i].count)
+	mapping.append(count_mapping[i].index(max_frq))
+	# updating label_p with mapping
+for i in range(number_seg):
+	label_p[i] = mapping[label_p[i]]
+	# segments in each clusters as sentences
+clusters = [[] for i in range(number_books)]
+for i in range(number_seg):
+	clusters[label_p[i]].append(segments[i])
 '''######'''
 '''Step 3'''
 '''######'''
-sys.exit()
 
-'''######'''
-'''Step 4'''
-'''######'''
-# revectorising segments with max_limit most frequent words
+'''################################'''
+'''Calculating Precision and Recall'''
+'''################################'''
+confusion_matrix = [ [0 for j in range(number_books)] for i in range(number_books)]
+for i in range(number_seg):
+	confusion_matrix[label_p[i]][label_seg[i]] += 1
+print "mapping:",mapping
+print "confusion_matrix:",confusion_matrix
+print "STEP 3 done"
+'''################################'''
+'''Calculating Precision and Recall'''
+'''################################'''
+
+'''############################################################'''
+'''######################Step 4################################'''
+'''Revectorising segments with max_features most frequent words'''
+'''############################################################'''
+'''
+model2 = model with at most max_features=1500 feature words
+vec_seg_cls(sparse matrix) = [[ [0,1,1,0,1,1,1,0,..... max_features=1500],[vector of segment 2],.... cluster 0]
+			   				 [ [0,0,1,1,0,0,1,0,..... max_features=1500],[vector of segment 2],.... cluster 1]
+			   				 ....
+			   				 number of books
+			  				 ]										vector representation of each segment in each cluster
+vec_seg_new(sparse matrix) = [[0,1,1,0,1,1,1,0,..... max_features=1500]
+							  [0,0,1,1,0,0,1,0,..... max_features=1500]
+							  ....
+							  number of segments
+							 ]										vector representation of each segment
+'''
 model2		  = CV(max_features = max_limit)
 model2 		  = model2.fit(merged_data)
 vec_seg_cls   = [model2.transform(clusters[i]) for i in range(number_books)]
