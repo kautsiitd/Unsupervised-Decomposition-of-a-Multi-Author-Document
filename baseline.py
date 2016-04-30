@@ -1,3 +1,6 @@
+'''#############################'''
+'''#####Importing Libraries#####'''
+'''#############################'''
 import sys
 import os
 import io
@@ -12,6 +15,11 @@ import operator
 import math
 import nltk
 from sklearn.naive_bayes import BernoulliNB as BNB
+import itertools
+print "Import Done"
+'''#############################'''
+'''#####Importing Libraries#####'''
+'''#############################'''
 
 # variables
 V 		  = 200
@@ -21,107 +29,182 @@ max_limit = 1500
 seg_size  = 30
 	# choosing top vital segment in a class
 best_per  = .8
-	# mapping that GMM do or ith cluster represent mapping[i]th author
-mapping   = [0,1]
 
-# STEP 1
-# extracting and merging data
-	# variables
+'''###########################'''
+'''##########Step 1###########'''
+'''extracting and merging data'''
+'''###########################'''
+'''
+books_names = ['a',b','c',....]
+merged_data = ['sentence1','sentence2',.....]
+label_sen   = [0,0,0,1,2,.....]								label of sentence in merged_data
+segments    = ['segment1','segment2',.....]
+label_in_seg= [[0,0,0,1,2,0,0,..],[0,1,1,2,1,0,1,..],....]	label of sentences in individual segments
+label_seg   = [0,1,1,0,2,0,...]								book with max count in segment
+'''
+# file names
 	# Eze-Job
 	# NewYorkTimesArticles
 	# MD-TF
 	# GC-MD
-folder 		= "dataset/Becker-Posner"
-merged_data	= []
-	# main
+	# Becker-Posner
+folder 		= "dataset/GC-MD-TF"
 books_names = os.listdir(folder)
-books_data 	= [io.open(os.path.join(folder,book), encoding="ISO-8859-1").readlines() for book in books_names]
+merged_data	= []
+label_sen	= []
+segments 	= []
+label_in_seg= []
+label_seg 	= []
+	# main
 number_books= len(books_names)
+books_data 	= []
+for book in books_names:
+	path = os.path.join(folder,book)
+	f    = io.open(path, encoding="ISO-8859-1")
+	books_data.append(f.readlines())
 number_sen	= [len(book_data) for book_data in books_data]
 total_sen	= sum(number_sen)
-number_seg	= (total_sen/seg_size)+1
+number_seg	= int(math.ceil(total_sen/seg_size))
 count_sen 	= [0]*number_books
-label_sen	= []
-label_seg	= []
 while(sum(count_sen) != total_sen):
-	book_num	  = rnd(1,number_books) - 1
 	size		  = rnd(1,V)
-	new_count_sen = count_sen[book_num] + min(size,number_sen[book_num]-count_sen[book_num])
-	merged_data.extend( [re.sub('[\r\n]','',i) for i in books_data[book_num][count_sen[book_num]:new_count_sen]] )
-	label_sen.extend( [book_num] * (new_count_sen - count_sen[book_num]) )
-	count_sen[book_num]	= new_count_sen
-segments = [' '.join(merged_data[ seg_size*i:min(seg_size*(i+1),total_sen) ]) for i in range(number_seg)]
-label_seg= [label_sen[ seg_size*i:min(seg_size*(i+1),total_sen) ] for i in range((total_sen/seg_size)+1)]
-print "STEP 1 done"
-	# calculating segments by each author
-org_seg		= [0 ,0 ,0]
-for i in range(len(label_seg)):
-	if float(label_seg[i].count(0))/len(label_seg[i]) == 1:org_seg[0] += 1
-	elif float(label_seg[i].count(0))/len(label_seg[i]) == 0:org_seg[1] += 1
-	else:org_seg[2] += 1
-print "Author 1:",org_seg[0]
-print "Author 2:",org_seg[1]
-print "Mixed   :",org_seg[2]
+	done_book 	  = [0]*number_books
+	for i in range(number_books):
+		book_num	  = rnd(0,number_books-1)
+		while(done_book[book_num] != 0):
+			book_num	  = rnd(0,number_books-1)
+		done_book[book_num] = 1
+		new_count_sen = count_sen[book_num] + min(size,number_sen[book_num]-count_sen[book_num])
+		for j in books_data[book_num][ count_sen[book_num]:new_count_sen ]:
+			merged_data.append( re.sub('[\r\n]','',j) )
+		label_sen.extend([book_num] * (new_count_sen - count_sen[book_num]) )
+		count_sen[book_num]	= new_count_sen
+for i in range(number_seg):
+	start = seg_size*i
+	end = min(seg_size*(i+1),total_sen)
+	seg_data = merged_data[start:end]
+	segments.append(' '.join(seg_data))
+	labels = label_sen[start:end]
+	label_in_seg.append(labels)
+for i in range(number_seg):
+	label_seg.append(max(set(label_in_seg[i]), key=label_in_seg[i].count))
+'''######'''
+'''Step 1'''
+'''######'''
 
-# STEP 2
-# finding features and vectorising segments
+'''###########################'''
+'''Printing Results of merging'''
+'''###########################'''
+	# calculating segments by each author
+org_seg		= [0 for i in range(number_books+1)]
+for i in range(number_seg):
+	if( sum(label_in_seg[i])%len(label_in_seg[i]) == 0):
+		org_seg[ sum(label_in_seg[i])/len(label_in_seg[i]) ] += 1
+	else:
+		org_seg[-1] += 1
+for i in range(number_books):
+	print "Author "+str(i)+":",org_seg[i]
+print "Mixed   :",org_seg[-1]
+print "STEP 1 done"
+'''###########################'''
+'''Printing Results of merging'''
+'''###########################'''
+
+'''#########################################'''
+'''#################Step 2##################'''
+'''finding features and vectorising segments'''
+'''#########################################'''
+'''
+model = model with feature words having atleast frequency = 3
+vec_seg(sparse matrix) = [ [0,0,1,1,0,1,1,1,1,0,0,0,0,1,1,... number of feature words]
+						 [0,0,1,0,0,1,1,0,1,0,0,1,1,0,0,... whether word present or not]
+						 ....
+						 number of segments
+		  				 ]
+number_f_w = number of feature words extracted from merged data
+'''
 model		  = CV(binary = True, min_df = 3)
 model 		  = model.fit(merged_data)
 vec_seg		  = model.transform(segments)
 number_f_w	  = len(model.vocabulary_)
+print "number of feature words:",number_f_w
 print "STEP 2 done"
+'''######'''
+'''Step 2'''
+'''######'''
 
-# STEP 3
-# classifying into clusters using GMM
+'''############################################'''
+'''#################Step 3#####################'''
+'''Unsupervised labelling of segments using GMM'''
+'''############################################'''
+'''
+label_p = []
+'''
 model1		  = GMM(n_components = number_books, n_iter = 1000, covariance_type = 'diag', n_init = 5, verbose = 1)
 model1		  = model1.fit(vec_seg.toarray())
 label_p 	  = model1.predict_proba(vec_seg.toarray())
 	# calculating recall
-recall_cluster = [[0 ,0] ,[0 ,0]]
-recall_cluster1= [[0 ,0] ,[0 ,0]]
-for i in range(len(label_p)):
-	if(label_p[i][0] == 1):
-		if(float(label_seg[i].count(0))/len(label_seg[i]) > .99):
-			recall_cluster [0][0] += 1
-			recall_cluster1[1][1] += 1
-		else:
-			recall_cluster [0][1] += 1
-			if(float(label_seg[i].count(1))/len(label_seg[i]) > .99):
-				recall_cluster1[1][0] += 1
-			else:
-				recall_cluster1[1][1] += 1
-	else:
-		if(float(label_seg[i].count(1))/len(label_seg[i]) > .99):
-			recall_cluster [1][0] += 1
-			recall_cluster1[0][1] += 1
-		else:
-			recall_cluster [1][1] += 1
-			if(float(label_seg[i].count(0))/len(label_seg[i]) > .99):
-				recall_cluster1[0][0] += 1
-			else:
-				recall_cluster1[0][1] += 1
-print recall_cluster, recall_cluster1
-if sum(zip(*recall_cluster)[0]) < sum(zip(*recall_cluster1)[0]):
-	mapping = [1,0]
-	print "Recall: ",float(recall_cluster1[0][0])/org_seg[0],float(recall_cluster1[1][0])/org_seg[1]
-	print "Pricision: ",float(recall_cluster1[0][0])/sum(recall_cluster1[0]),float(recall_cluster1[1][0])/sum(recall_cluster1[1])
-else:
-	print "Recall: ",float(recall_cluster[0][0])/org_seg[0],float(recall_cluster[1][0])/org_seg[1]
-	print "Pricision: ",float(recall_cluster[0][0])/sum(recall_cluster[0]),float(recall_cluster[1][0])/sum(recall_cluster[1])
+# recall_clusters= dict()
+# temp = [[[0 ,0] ,[0 ,0]] for i in range(number_books)]
+# for i in itertools.permutations(range(number_books)):
+# 	temp_mapping = dict(zip(range(number_books),i))
+# for i in range(len(label_p)):
+# 	predicted = label_p[i]).index(max(label_p[i])
+# 	given_l = org_label[i]
+# 	if()
+# 	if(label_p[i][0] == 1):
+# 		if(float(label_seg[i].count(0))/len(label_seg[i]) > .99):
+# 			recall_cluster [0][0] += 1
+# 			recall_cluster1[1][1] += 1
+# 		else:
+# 			recall_cluster [0][1] += 1
+# 			if(float(label_seg[i].count(1))/len(label_seg[i]) > .99):
+# 				recall_cluster1[1][0] += 1
+# 			else:
+# 				recall_cluster1[1][1] += 1
+# 	else:
+# 		if(float(label_seg[i].count(1))/len(label_seg[i]) > .99):
+# 			recall_cluster [1][0] += 1
+# 			recall_cluster1[0][1] += 1
+# 		else:
+# 			recall_cluster [1][1] += 1
+# 			if(float(label_seg[i].count(0))/len(label_seg[i]) > .99):
+# 				recall_cluster1[0][0] += 1
+# 			else:
+# 				recall_cluster1[0][1] += 1
+# print recall_cluster, recall_cluster1
+# if sum(zip(*recall_cluster)[0]) < sum(zip(*recall_cluster1)[0]):
+# 	mapping = [1,0]
+# 	print "Recall: ",float(recall_cluster1[0][0])/org_seg[0],float(recall_cluster1[1][0])/org_seg[1]
+# 	print "Pricision: ",float(recall_cluster1[0][0])/sum(recall_cluster1[0]),float(recall_cluster1[1][0])/sum(recall_cluster1[1])
+# else:
+# 	print "Recall: ",float(recall_cluster[0][0])/org_seg[0],float(recall_cluster[1][0])/org_seg[1]
+# 	print "Pricision: ",float(recall_cluster[0][0])/sum(recall_cluster[0]),float(recall_cluster[1][0])/sum(recall_cluster[1])
 	# putting segments in corresponding cluster
 clusters	  = [[] for i in range(number_books)]
 [clusters[map(lambda x: (x),label_p[i]) . index(max(label_p[i]))].append(segments[i]) for i in range(number_seg)]
 print "STEP 3 done"
+'''######'''
+'''Step 3'''
+'''######'''
+sys.exit()
 
-# STEP 4
+'''######'''
+'''Step 4'''
+'''######'''
 # revectorising segments with max_limit most frequent words
 model2		  = CV(max_features = max_limit)
 model2 		  = model2.fit(merged_data)
 vec_seg_cls   = [model2.transform(clusters[i]) for i in range(number_books)]
 vec_seg_new	  = model2.transform(segments)
 print "STEP 4 done"
+'''######'''
+'''Step 4'''
+'''######'''
 
-# STEP 5
+'''######'''
+'''Step 5'''
+'''######'''
 # Applying SegmentElicitation Procedure
 	# calculating posterior probability of words
 		# variables
@@ -151,15 +234,25 @@ for j in range(number_seg):
 	# finding vital segment for each cluster
 sort_seg = [sorted(post_p_seg[i], key=lambda x:-x[i]+max(x[:i]+x[i+1:-1]))[:int(best_per*len(post_p_seg[i]))] for i in range(number_books)]
 print "STEP 5 done"
+'''######'''
+'''Step 5'''
+'''######'''
 
-# STEP 6
+'''######'''
+'''Step 6'''
+'''######'''
 # representing vital segments in form of original minimum 3 frq words for each corresponding cluster
 	# vital_seg = [cluster][seg][binary word representation]
 dense_array2 = vec_seg.toarray()
 vital_seg= [ [dense_array2[seg[-1]] for seg in sort_seg[cluster_n]] for cluster_n in range(number_books)]
 print "STEP 6 done"
+'''######'''
+'''Step 6'''
+'''######'''
 
-# STEP 7
+'''######'''
+'''Step 7'''
+'''######'''
 # Applying Bernouli Naive-Bayesian model to learn a classifier on vital_seg
 train = []
 labels= []
@@ -177,8 +270,13 @@ for cluster_n in range(number_books):
 model3 = BNB(binarize = None, fit_prior = False)
 model3 = model3.fit(train, labels)
 print "STEP 7 done"
+'''######'''
+'''Step 7'''
+'''######'''
 
-# STEP 8
+'''######'''
+'''Step 8'''
+'''######'''
 # classfying sentences on trained classifier and calculating score
 	# using nltk
 		# vec_sen = model.transform(merged_data).toarray()
@@ -195,13 +293,15 @@ vec_sen = model.transform(merged_data)
 # shuffle(set_a)
 temp = model3.predict_proba(vec_seg)
 predicted = [map(lambda x: (x),temp[i]).index(max(temp[i])) for i in range(test_size)]
-org_label = [[0,1][float(label_seg[i].count(1))/len(label_seg[i])>.65] for i in range(test_size)]
 # for i in range(test_size):
 # 	print temp[i], org_label[i], map(lambda x: (x),temp[i]).index(max(temp[i]))
 # print model3.score(zip(*set_a)[0], zip(*set_a)[1])
 print model3.score(vec_seg, org_label)
 print labels.count(0),labels.count(1),org_label.count(0),org_label.count(1),predicted.count(0),predicted.count(1)
 print "STEP 8 done"
+'''######'''
+'''Step 8'''
+'''######'''
 
 # test_size = 1000
 # vec_sen = model.transform(merged_data[:1000])
