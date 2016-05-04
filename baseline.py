@@ -17,13 +17,14 @@ import nltk
 from sklearn.naive_bayes import MultinomialNB as BNB
 import itertools
 import numpy as np
+from pos_tag import pos_tagging
 print "Import Done"
 '''#############################'''
 '''#####Importing Libraries#####'''
 '''#############################'''
 
 # variables
-V 		  = 100
+V 		  = 200
 b_num     = 0
 b = ["Becker-Posner","GC-TF-PK","MD-TF-PK","MD-GC-PK","MD-GC-TF-PK"]
 gmm_initialisation = 5
@@ -142,8 +143,8 @@ vec_seg(sparse matrix) = [ [0,0,1,1,0,1,1,1,1,0,0,0,0,1,1,... number of feature 
 		  				 ]
 number_f_w = number of feature words extracted from merged data
 '''
-model		  = CV(binary = True, min_df = 3, ngram_range=(1,3), max_features=20000)
-model 		  = model.fit(merged_data)
+model		  = CV(binary = True, min_df = 3, ngram_range=(1,2), max_features=20000)
+model 		  = model.fit(pos_tagging(merged_data))
 vec_seg		  = model.transform(segments)
 number_f_w	  = len(model.vocabulary_)
 print "number of feature words:",number_f_w
@@ -151,6 +152,7 @@ print "STEP 2 done"
 '''######'''
 '''Step 2'''
 '''######'''
+sys.exit()
 
 '''############################################'''
 '''#################Step 3#####################'''
