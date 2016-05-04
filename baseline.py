@@ -23,8 +23,8 @@ print "Import Done"
 '''#############################'''
 
 # variables
-V 		  = 200
-b_num     = 1
+V 		  = 100
+b_num     = 0
 b = ["Becker-Posner","GC-TF-PK","MD-TF-PK","MD-GC-PK","MD-GC-TF-PK"]
 gmm_initialisation = 5
 	# number of most frequent features
