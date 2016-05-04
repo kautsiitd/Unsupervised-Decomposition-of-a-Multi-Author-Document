@@ -104,7 +104,6 @@ for i in range(number_seg):
 	label_in_seg.append(labels)
 for i in range(number_seg):
 	label_seg.append(max(set(label_in_seg[i]), key=label_in_seg[i].count))
-print len(merged_data)
 '''######'''
 '''Step 1'''
 '''######'''

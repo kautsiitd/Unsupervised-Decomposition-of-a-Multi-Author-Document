@@ -1,3 +1,5 @@
+import os
+import sys
 from nltk.tag import StanfordPOSTagger
 st = StanfordPOSTagger('/home/dell/Desktop/Unsupervised-Decomposition-of-a-Multi-Author-Document/stanford-postagger-2015-12-09/models/english-bidirectional-distsim.tagger')
 
@@ -9,14 +11,26 @@ tagged = ['tag1 tag2 ...', 'tag1 tag2 ...', .... number of sentences]
 '''
 
 def pos_tagging(data):
+	f = open('pos_tag.txt', 'wb')
+	g = open('errors.txt', 'wb')
 	i = 0
 	print len(data)
 	tagged = []
 	for sentence in data:
 		print i
 		temp = []
-		for key,value in st.tag(sentence.split()):
-			temp.append(value)
-		tagged.append(' '.join(temp))
+		try:
+			temp1= st.tag(sentence.encode("ISO-8859-1").split())
+			for key,value in temp1:
+				temp.append(value)
+			tagged.append(' '.join(temp))
+			f.write(sentence.encode("ISO-8859-1"))
+			f.write('\n')
+			f.write(' '.join(temp))
+			f.write('\n')
+		except:
+			print "kanu"
+			g.write(sentence.encode("ISO-8859-1"))
+			g.write('\n')
 		i += 1
 	return tagged
