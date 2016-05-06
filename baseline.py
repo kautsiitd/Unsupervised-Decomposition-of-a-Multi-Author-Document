@@ -38,6 +38,7 @@ seg_size  = 30
 best_per  = .8
 	# number of sentence to test on from final model
 test_size = 1000
+n_gram_size = 2
 
 '''###########################'''
 '''##########Step 1###########'''
@@ -66,7 +67,7 @@ label_in_seg   = [0,1,1,0,2,0,...]								book with max count in segment
 	# MD-TF-PK
 	# MD-GC-PK
 	# MD-GC-TF-PK
-folder 		= "dataset/Original/"+b[b_num]
+folder 		= "dataset/Pos_Tag/"+b[b_num]
 books_names = os.listdir(folder)
 merged_data	= []
 label_sen	= []
@@ -163,7 +164,7 @@ number_f_w = number of feature words extracted from merged data
 # 		g.write(sentence.encode("ISO-8859-1"))
 # 		g.write('\n')
 # 	i += 1
-model		  = CV(binary = True, min_df = 3, ngram_range=(1,1), max_features=20000)
+model		  = CV(binary = True, min_df = 3, ngram_range=(1,n_gram_size), max_features=20000)
 model 		  = model.fit(merged_data)
 vec_seg		  = model.transform(segments)
 number_f_w	  = len(model.vocabulary_)
@@ -257,7 +258,7 @@ vec_seg_new(sparse matrix) = [[0,1,1,0,1,1,1,0,..... max_features=1500]
 							  number of segments
 							 ]								vector representation of each segment
 '''
-model2		  = CV(max_features = max_features)
+model2		  = CV(ngram_range=(1,n_gram_size), max_features = max_features)
 model2 		  = model2.fit(merged_data)
 vec_seg_cls   = [model2.transform(clusters[i]) for i in range(number_books)]
 vec_seg_new	  = model2.transform(segments)
