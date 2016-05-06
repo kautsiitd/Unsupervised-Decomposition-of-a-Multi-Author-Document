@@ -1,6 +1,19 @@
 import os
 import sys
+import subprocess
+import shlex
 from nltk.tag import StanfordPOSTagger
+# cmd1 = "export STANFORDTOOLSDIR=/home/dell/Desktop/Unsupervised-Decomposition-of-a-Multi-Author-Document"
+# args = shlex.split(cmd1)
+# subprocess.Popen(args, stdout=subprocess.PIPE,
+#                         env={'STANFORDTOOLSDIR': '/home/dell/Desktop/Unsupervised-Decomposition-of-a-Multi-Author-Document'})
+# cmd1 = "export CLASSPATH=$STANFORDTOOLSDIR/stanford-postagger-2015-12-09/stanford-postagger.jar:$STANFORDTOOLSDIR/stanford-postagger-2015-12-09/models"
+# args = shlex.split(cmd1)
+# subprocess.Popen(args, stdout=subprocess.PIPE,
+#                         env={'CLASSPATH': '$STANFORDTOOLSDIR/stanford-postagger-2015-12-09/stanford-postagger.jar:$STANFORDTOOLSDIR/stanford-postagger-2015-12-09/models'})
+# os.system("export STANFORDTOOLSDIR=$HOME/Desktop/Unsupervised-Decomposition-of-a-Multi-Author-Document")
+# os.system("export CLASSPATH=$STANFORDTOOLSDIR/stanford-postagger-2015-12-09/stanford-postagger.jar:$STANFORDTOOLSDIR/stanford-postagger-2015-12-09/models")
+
 st = StanfordPOSTagger('/home/dell/Desktop/Unsupervised-Decomposition-of-a-Multi-Author-Document/stanford-postagger-2015-12-09/models/english-bidirectional-distsim.tagger')
 
 

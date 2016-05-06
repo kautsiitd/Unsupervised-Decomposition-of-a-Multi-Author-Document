@@ -1,3 +1,4 @@
+import os
 import copy
 import nltk
 from nltk.internals import find_jars_within_path
@@ -144,3 +145,5 @@ def find_pq_grams(sentence):
         for j in range(5):
             temp[i][j] = temp[i][j].strip("'")
     return temp
+
+print find_pq_grams("However, my own belief is that we can get a lot of explanatory power out of factors that do not rely on intrinsic gender difference in talents, including high-level talents.")
