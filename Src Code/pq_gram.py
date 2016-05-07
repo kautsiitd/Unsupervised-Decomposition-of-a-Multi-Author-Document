@@ -146,4 +146,26 @@ def find_pq_grams(sentence):
             temp[i][j] = temp[i][j].strip("'")
     return temp
 
-print find_pq_grams("However, my own belief is that we can get a lot of explanatory power out of factors that do not rely on intrinsic gender difference in talents, including high-level talents.")
+f = open('../pos_tag.txt', 'wb')
+g = open('../errors.txt', 'wb')
+i = 0
+print len(data)
+tagged = []
+for sentence in data:
+	print i
+	temp = []
+	try:
+		temp1= st.tag(sentence.encode("ISO-8859-1").split())
+		for key,value in temp1:
+			temp.append(value)
+		tagged.append(' '.join(temp))
+		f.write(sentence.encode("ISO-8859-1"))
+		f.write('\n')
+		f.write(' '.join(temp))
+		f.write('\n')
+	except:
+		print "kanu"
+		g.write(sentence.encode("ISO-8859-1"))
+		g.write('\n')
+	i += 1
+return tagged

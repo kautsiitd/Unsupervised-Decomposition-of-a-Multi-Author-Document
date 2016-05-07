@@ -24,8 +24,8 @@ tagged = ['tag1 tag2 ...', 'tag1 tag2 ...', .... number of sentences]
 '''
 
 def pos_tagging(data):
-	f = open('pos_tag.txt', 'wb')
-	g = open('errors.txt', 'wb')
+	f = open('../pos_tag.txt', 'wb')
+	g = open('../errors.txt', 'wb')
 	i = 0
 	print len(data)
 	tagged = []

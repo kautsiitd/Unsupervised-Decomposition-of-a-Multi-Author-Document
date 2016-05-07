@@ -38,7 +38,7 @@ seg_size  = 30
 best_per  = .8
 	# number of sentence to test on from final model
 test_size = 1000
-n_gram_size = 2
+n_gram_size = 3
 
 '''###########################'''
 '''##########Step 1###########'''
@@ -67,7 +67,7 @@ label_in_seg   = [0,1,1,0,2,0,...]								book with max count in segment
 	# MD-TF-PK
 	# MD-GC-PK
 	# MD-GC-TF-PK
-folder 		= "dataset/Pos_Tag/"+b[b_num]
+folder 		= "../dataset/Pos_Tag/"+b[b_num]
 books_names = os.listdir(folder)
 merged_data	= []
 label_sen	= []
