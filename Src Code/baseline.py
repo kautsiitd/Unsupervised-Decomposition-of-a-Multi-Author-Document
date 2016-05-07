@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# encoding=utf8
+from __future__ import unicode_literals
 '''#############################'''
 '''#####Importing Libraries#####'''
 '''#############################'''
@@ -67,7 +70,7 @@ label_in_seg   = [0,1,1,0,2,0,...]								book with max count in segment
 	# MD-TF-PK
 	# MD-GC-PK
 	# MD-GC-TF-PK
-folder 		= "../dataset/Pos_Tag/"+b[b_num]
+folder 		= "dataset/Original/"+b[b_num]
 books_names = os.listdir(folder)
 merged_data	= []
 label_sen	= []
@@ -145,25 +148,6 @@ vec_seg(sparse matrix) = [ [0,0,1,1,0,1,1,1,1,0,0,0,0,1,1,... number of feature 
 		  				 ]
 number_f_w = number of feature words extracted from merged data
 '''
-# f = open('pos_tag.txt', 'wb')
-# g = open('errors.txt', 'wb')
-# i = 0
-# for sentence in data:
-# 	print i
-# 	temp = []
-# 	try:
-# 		temp1= find_pq_grams(sentence.encode("ISO-8859-1"))
-# 		for key,value in temp1:
-# 			temp.append(value)
-# 		f.write(sentence.encode("ISO-8859-1"))
-# 		f.write('\n')
-# 		f.write(' '.join(temp))
-# 		f.write('\n')
-# 	except:
-# 		print "kanu"
-# 		g.write(sentence.encode("ISO-8859-1"))
-# 		g.write('\n')
-# 	i += 1
 model		  = CV(binary = True, min_df = 3, ngram_range=(1,n_gram_size), max_features=20000)
 model 		  = model.fit(merged_data)
 vec_seg		  = model.transform(segments)
