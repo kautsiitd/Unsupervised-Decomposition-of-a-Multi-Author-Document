@@ -164,7 +164,7 @@ for book in books_names:
 	books_data.append(f.readlines())
 
 for book_data,book_name in zip(books_data,books_names):
-	folder = "dataset/Parser/"+b[b_num]
+	folder = "Backup/Parser/"+b[b_num]
 	try:
 		os.mkdir(folder)
 	except:
