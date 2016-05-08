@@ -30,6 +30,7 @@ print "Import Done"
 
 # variables
 V 		  = 200
+data_type = "Original"
 b_num     = 0
 b = ["Becker-Posner","GC-TF-PK","MD-TF-PK","MD-GC-PK","MD-GC-TF-PK"]
 gmm_initialisation = 5
@@ -41,7 +42,11 @@ seg_size  = 30
 best_per  = .8
 	# number of sentence to test on from final model
 test_size = 1000
-n_gram_size = 3
+n_gram_size = 1
+lowercase = True
+tokenizer = None
+# token_pattern = u'(?u)[\\w\\*]+'
+token_pattern = u'(?u)\\b\\w\\w+\\b'
 
 '''###########################'''
 '''##########Step 1###########'''
@@ -70,7 +75,7 @@ label_in_seg   = [0,1,1,0,2,0,...]								book with max count in segment
 	# MD-TF-PK
 	# MD-GC-PK
 	# MD-GC-TF-PK
-folder 		= "dataset/Original/"+b[b_num]
+folder 		= "dataset/"+data_type+"/"+b[b_num]
 books_names = os.listdir(folder)
 merged_data	= []
 label_sen	= []
@@ -148,9 +153,13 @@ vec_seg(sparse matrix) = [ [0,0,1,1,0,1,1,1,1,0,0,0,0,1,1,... number of feature 
 		  				 ]
 number_f_w = number of feature words extracted from merged data
 '''
-model		  = CV(binary = True, min_df = 3, ngram_range=(1,n_gram_size), max_features=20000)
+model		  = CV(binary = True, min_df = 3, ngram_range=(1,n_gram_size), max_features=20000, lowercase=lowercase, tokenizer=tokenizer, token_pattern=token_pattern)
 model 		  = model.fit(merged_data)
 vec_seg		  = model.transform(segments)
+# for i in vec_seg[0].toarray():
+# 	for j in i:
+# 		print j,
+# sys.exit()
 number_f_w	  = len(model.vocabulary_)
 max_features  = min(max_features,number_f_w)
 print "number of feature words:",number_f_w
