@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# export CLASSPATH=$STANFORDTOOLSDIR/stanford-parser-full-2015-12-09/stanford-parser.jar:$STANFORDTOOLSDIR/stanford-parser-full-2015-12-09/stanford-parser-3.6.0-models.jar
 from __future__ import unicode_literals
 import os
 import sys
@@ -151,7 +152,7 @@ def find_pq_grams(sentence):
 			temp[i][j] = temp[i][j].strip("'")
 	return temp
 
-b_num     = 0
+b_num     = 4
 b = ["Becker-Posner","GC-TF-PK","MD-TF-PK","MD-GC-PK","MD-GC-TF-PK"]
 
 folder 		= "dataset/Original/"+b[b_num]

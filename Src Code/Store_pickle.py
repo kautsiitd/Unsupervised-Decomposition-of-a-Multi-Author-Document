@@ -1,6 +1,6 @@
 import pickle
 
-dataset_name = "Becker-Posner"
+dataset_name = "MD-GC-TF-PK"
 temp = dict()
 
 with open("../pos_tag.txt") as f:

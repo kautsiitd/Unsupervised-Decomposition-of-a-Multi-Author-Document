@@ -21,7 +21,7 @@ import nltk
 from sklearn.naive_bayes import MultinomialNB as BNB
 import itertools
 import numpy as np
-# from pos_tag import pos_tagging
+from pos_tag import pos_tagging
 # from pq_gram import find_pq_grams
 print "Import Done"
 '''#############################'''
@@ -153,14 +153,21 @@ vec_seg(sparse matrix) = [ [0,0,1,1,0,1,1,1,1,0,0,0,0,1,1,... number of feature 
 		  				 ]
 number_f_w = number of feature words extracted from merged data
 '''
+
+# pos_tagging(merged_data)
+# sys.exit()
 model		  = CV(binary = True, min_df = 3, ngram_range=(1,n_gram_size), max_features=20000, lowercase=lowercase, tokenizer=tokenizer, token_pattern=token_pattern)
 model 		  = model.fit(merged_data)
+# doc_frq		  = model.transform([' '.join(merged_data)]).toarray()[0]
 vec_seg		  = model.transform(segments)
-# for i in vec_seg[0].toarray():
-# 	for j in i:
-# 		print j,
-# sys.exit()
 number_f_w	  = len(model.vocabulary_)
+vec_seg 	  = vec_seg.toarray()
+# temp 		  = []
+# for i in range(number_seg):
+# 	temp.append([])
+# 	for j in range(number_f_w):
+# 		temp[i].append(float(vec_seg[i][j])/doc_frq[j])
+# vec_seg 	  = temp
 max_features  = min(max_features,number_f_w)
 print "number of feature words:",number_f_w
 print "STEP 2 done"
@@ -190,8 +197,8 @@ mapping = [0 for i in range(number_books)]
 while(len(set(mapping)) != number_books):
 	model1		  = GMM(n_components = number_books, n_iter = 1000, covariance_type = 'diag', n_init = gmm_initialisation, verbose = 1)
 	# label_p1 	  = model1.fit_predict(vec_seg.toarray())
-	model1		  = model1.fit(vec_seg.toarray())
-	label_p 	  = model1.predict_proba(vec_seg.toarray())
+	model1		  = model1.fit(vec_seg)
+	label_p 	  = model1.predict_proba(vec_seg)
 	temp_label_p  = []
 	for j in range(number_seg):
 		temp_label_p.append(map(lambda x: (x),label_p[j]) . index(max(label_p[j])))

@@ -2,7 +2,7 @@ import pickle
 import os
 import io
 
-dataset_name = "Becker-Posner"
+dataset_name = "MD-GC-TF-PK"
 
 with open("../Pickle/"+dataset_name+"_pos.pickle") as f:
 	temp = pickle.load(f)
