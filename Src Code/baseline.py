@@ -41,7 +41,7 @@ seg_size  = 30
 	# choosing top vital segment in a class
 best_per  = .8
 	# number of sentence to test on from final model
-test_size = 1000
+test_size = 26000
 n_gram_size = 1
 lowercase = True
 tokenizer = None
@@ -369,7 +369,7 @@ for cluster_n in range(number_books):
 	for seg in vital_seg[cluster_n]:
 		train.append(seg.tolist())
 		labels.append(cluster_n)
-model3 = BNB(fit_prior = False)
+model3 = BNB(fit_prior = True)
 model3 = model3.fit(train, labels)
 print "STEP 7 done"
 '''######'''
@@ -380,7 +380,7 @@ print "STEP 7 done"
 '''##########################Step 8################################'''
 '''classfying sentences on trained classifier and calculating score'''
 '''################################################################'''
-vec_sen = model2.transform(merged_data[:1000])
+vec_sen = model2.transform(merged_data[:test_size])
 temp = model3.predict_proba(vec_sen)
 predicted = [map(lambda x: (x),temp[i]).index(max(temp[i])) for i in range(test_size)]
 org_label = label_sen[:test_size]
@@ -389,3 +389,8 @@ print "STEP 8 done"
 '''######'''
 '''Step 8'''
 '''######'''
+
+'''#########################################'''
+'''################Step 9###################'''
+'''Applying Probability Indication Procedure'''
+'''#########################################'''
