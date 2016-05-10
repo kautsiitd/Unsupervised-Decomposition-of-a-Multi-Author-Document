@@ -2,7 +2,7 @@ import os
 import sys
 import glob
 
-dataset = "Becker-Posner"
+dataset = "GC-TF-PK"
 source_folder  = "../Backup/Parser/"+dataset
 destination_folder = "../dataset/Parser/"+dataset
 
