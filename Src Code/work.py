@@ -30,20 +30,23 @@ print "Import Done"
 
 # variables
 V 		  = 200
-data_type = "Original"
+data_type = "Pos_Tag"
 b_num     = 0
 b = ["Becker-Posner","GC-TF-PK","MD-TF-PK","MD-GC-PK","MD-GC-TF-PK"]
 gmm_initialisation = 5
 	# number of most frequent features
+max_features_s1 = 11000
 max_features = 1500
 	# segment size
 seg_size  = 30
 	# choosing top vital segment in a class
 best_per  = .8
 	# number of sentence to test on from final model
-n_gram_size = 1
+test_size = 26921
+n_gram_size = 4
 lowercase = True
 tokenizer = None
+# token_pattern = u'(?u)[\\w\\*]+'
 token_pattern = u'(?u)\\b\\w\\w+\\b'
 
 '''###########################'''
@@ -113,7 +116,6 @@ for i in range(number_seg):
 	label_in_seg.append(labels)
 for i in range(number_seg):
 	label_seg.append(max(set(label_in_seg[i]), key=label_in_seg[i].count))
-
 '''######'''
 '''Step 1'''
 '''######'''
@@ -153,11 +155,20 @@ vec_seg(sparse matrix) = [ [0,0,1,1,0,1,1,1,1,0,0,0,0,1,1,... number of feature 
 number_f_w = number of feature words extracted from merged data
 '''
 
-model		  = CV(binary = True, min_df = 3, ngram_range=(1,n_gram_size), max_features=20000, lowercase=lowercase, tokenizer=tokenizer, token_pattern=token_pattern)
+# pos_tagging(merged_data)
+# sys.exit()
+model		  = CV(binary = True, min_df = 3, ngram_range=(1,n_gram_size), max_features=max_features_s1, lowercase=lowercase, tokenizer=tokenizer, token_pattern=token_pattern)
 model 		  = model.fit(merged_data)
+# doc_frq		  = model.transform([' '.join(merged_data)]).toarray()[0]
 vec_seg		  = model.transform(segments)
 number_f_w	  = len(model.vocabulary_)
 vec_seg 	  = vec_seg.toarray()
+# temp 		  = []
+# for i in range(number_seg):
+# 	temp.append([])
+# 	for j in range(number_f_w):
+# 		temp[i].append(float(vec_seg[i][j])/doc_frq[j])
+# vec_seg 	  = temp
 max_features  = min(max_features,number_f_w)
 print "number of feature words:",number_f_w
 print "STEP 2 done"
@@ -186,6 +197,7 @@ clusters	  = [['sentence','sentence',..... in cluster 0]
 mapping = [0 for i in range(number_books)]
 while(len(set(mapping)) != number_books):
 	model1		  = GMM(n_components = number_books, n_iter = 1000, covariance_type = 'diag', n_init = gmm_initialisation, verbose = 1)
+	# label_p1 	  = model1.fit_predict(vec_seg.toarray())
 	model1		  = model1.fit(vec_seg)
 	label_p 	  = model1.predict_proba(vec_seg)
 	temp_label_p  = []
