@@ -33,7 +33,7 @@ print "Import Done"
 '''############################'''
 '''#####Defining Variables#####'''
 ##################################
-V 		  = 200
+V 		  = 50
 b_num     = 0
 b = ["Becker-Posner","GC-TF-PK","MD-TF-PK","MD-GC-PK","MD-GC-TF-PK"]
 gmm_initialisation = 5
@@ -171,17 +171,26 @@ for i in range(number_seg):
 	seg_data = merged_parser[start:end]
 	segments_parser.append(seg_data)
 
-'''################STEP3###############'''
+'''#########################STEP3#######################'''
+'''Find If given Segment is Pure or Mix using words used'''
+###########################################################
+'''
+Calculate Similiarity Index of Segment:
+	Higher Similiarity Index, Higher Pure
+'''
+
+# sys.exit()
+
+'''################STEP4###############'''
 '''Find If given Segment is Pure or Mix'''
 ##########################################
 '''
 Calculate Similiarity Index of Segment:
 	Higher Similiarity Index, Higher Pure
 '''
-mixed_segments = []
-pure_segments  = []
+import matplotlib.pyplot as plt
+from scipy.interpolate import spline
 sentence_size  = []
-threshold	   = 1
 # calculating sentence sizes in each segment
 for segment in segments_parser:
 	sentence_size.append([])
@@ -193,7 +202,6 @@ number_seg = len(segments_parser)
 score_true = Manager().list([])
 score_false= Manager().list([])
 def score_similiarity(i):
-	# print i
 	segment = segments_parser[i]
 	similiarity_index = 0
 	seg_size = len(segment)
@@ -205,21 +213,51 @@ def score_similiarity(i):
 			for k in range(j,seg_size):
 				if pq_gram in segment[k]:
 					similiarity_index += 1.0/(sentence_size[i][j]*sentence_size[i][k])
-	for j in range(len(label_in_seg[i])):
-		print segments_sen[i][j].encode("ISO-8859-1"),label_in_seg[i][j]
-	print is_pure_seg[i],label_in_seg[i],similiarity_index
+	# for j in range(len(label_in_seg[i])):
+	# 	print segments_sen[i][j].encode("ISO-8859-1"),label_in_seg[i][j]
+	# print is_pure_seg[i],similiarity_index
 	# sys.exit()
 	if is_pure_seg[i] == True:
 		score_true.append(similiarity_index)
 	else:
 		score_false.append(similiarity_index)
-	if similiarity_index > threshold:
-		pure_segments.append(segments_parser[i])
-	else:
-		mixed_segments.append(segments_parser[i])
-p = Pool(1)
+p = Pool(8)
 p.map(score_similiarity, range(number_seg))
-score_true.sort()
-score_false.sort()
-print score_true
-print score_false
+print "Accuracy Initial",float(sum(org_seg)-org_seg[-1])/sum(org_seg),sum(org_seg)
+accuracies = []
+n_pure = []
+data_size = []
+fig, ax = plt.subplots()
+axes = [ax, ax.twinx()]
+for thr in range(20,210):
+	mixed_segments = []
+	pure_segments  = []
+	threshold = float(thr)/100
+	for similiarity_index in score_true:
+		if similiarity_index > threshold:
+			pure_segments.append(1)
+		else:
+			mixed_segments.append(0)
+	for similiarity_index in score_false:
+		if similiarity_index > threshold:
+			pure_segments.append(0)
+		else:
+			mixed_segments.append(1)
+	print thr,"Accuracy Final",pure_segments.count(1),float(pure_segments.count(1))/len(pure_segments),len(pure_segments)
+	accuracies.append(float(pure_segments.count(1)*100)/len(pure_segments))
+	n_pure.append(pure_segments.count(1))
+	data_size.append(len(pure_segments))
+
+base = np.array([float(x)/100 for x in range(20,210)])
+thr = np.linspace(base.min(),base.max(),500)
+accuracies_smooth = spline(base,accuracies,thr)
+n_pure_smooth = spline(base,n_pure,thr)
+data_size_smooth = spline(base,data_size,thr)
+axes[1].plot(thr,accuracies_smooth,'r')
+axes[0].plot(thr,n_pure_smooth,'b')
+axes[0].plot(thr,data_size_smooth,'g')
+plt.show()
+	# score_true.sort()
+	# score_false.sort()
+	# print score_true
+	# print score_false
