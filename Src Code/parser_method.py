@@ -1,3 +1,35 @@
+# -*- coding: utf-8 -*-
+# encoding=utf8
+from __future__ import unicode_literals
+'''#############################'''
+'''#####Importing Libraries#####'''
+###################################
+import sys
+import os
+import io
+import re
+import pickle
+from random import randint as rnd
+from random import shuffle
+from itertools import groupby
+from sklearn.feature_extraction.text import CountVectorizer as CV
+from sklearn.mixture import GMM
+from pprint import pprint
+import operator
+import math
+import nltk
+from sklearn.naive_bayes import MultinomialNB as BNB
+import itertools
+import numpy as np
+from multiprocessing import Pool
+from multiprocessing import Manager
+# from pos_tag import pos_tagging
+# from pq_gram import find_pq_grams
+print "Import Done"
+'''#############################'''
+'''#####Importing Libraries#####'''
+###################################
+
 '''############################'''
 '''#####Defining Variables#####'''
 ##################################
@@ -11,29 +43,35 @@ seg_size  = 30
 n_gram_size = 3
 '''############################'''
 '''#####Defining Variables#####'''
-'''############################'''
+##################################
 
 '''##########Step 1###########'''
 '''extracting and merging data'''
 #################################
-	'''
+'''
 	books_names = ['a',b','c',....]
 	merged_data = ['sentence1','sentence2',.....]
 	label_sen   = [0,0,0,1,2,.....]								label of sentence in merged_data
+	segments_sen= [['sentence1','sentence2',... ],['sentence1','sentence2',... ],... number of segments]
 	segments    = ['segment1','segment2',.....]
 	label_in_seg= [[0,0,0,1,2,0,0,..]
 				   [0,1,1,2,1,0,1,..]
 				    ....
 				  ]	label of sentences in individual segments
-	label_in_seg   = [0,1,1,0,2,0,...]								book with max count in segment
-	'''
-folder 		= "dataset/Original/"+b[b_num]
+	label_in_seg= [0,1,1,0,2,0,...]								book with max count in segment
+	is_pure_seg = [True,True,False,True,... number of segments]	True if segment is pure
+	randoms		= [ [120,[2,0,1,.. number of Authors]], [180,[1,2,0,.. number of Authors]], .. ]
+'''
+folder 		= "../dataset/Original/"+b[b_num]
 books_names = os.listdir(folder)
 merged_data	= []
 label_sen	= []
+segments_sen= []
 segments 	= []
 label_seg   = []
 label_in_seg= []
+is_pure_seg = []
+randoms		= []
 	# main
 number_books= len(books_names)
 books_data 	= []
@@ -47,11 +85,13 @@ number_seg	= int(math.ceil((total_sen/seg_size)))
 count_sen 	= [0]*number_books
 while(sum(count_sen) != total_sen):
 	size		  = rnd(1,V)
+	randoms.append([size,[]])
 	done_book 	  = [0]*number_books
 	for i in range(number_books):
 		book_num	  = rnd(0,number_books-1)
 		while(done_book[book_num] != 0):
 			book_num	  = rnd(0,number_books-1)
+		randoms[-1][-1].append(book_num)
 		done_book[book_num] = 1
 		new_count_sen = count_sen[book_num] + min(size,number_sen[book_num]-count_sen[book_num])
 		for j in books_data[book_num][ count_sen[book_num]:new_count_sen ]:
@@ -62,11 +102,14 @@ for i in range(number_seg):
 	start = seg_size*i
 	end = min(seg_size*(i+1),total_sen)
 	seg_data = merged_data[start:end]
+	segments_sen.append(seg_data)
 	segments.append(' '.join(seg_data))
 	labels = label_sen[start:end]
 	label_in_seg.append(labels)
 for i in range(number_seg):
 	label_seg.append(max(set(label_in_seg[i]), key=label_in_seg[i].count))
+for i in range(number_seg):
+	is_pure_seg.append(sum(label_in_seg[i])%len(label_in_seg[i]) == 0)
 '''######'''
 '''Step 1'''
 '''######'''
@@ -74,9 +117,9 @@ for i in range(number_seg):
 '''###########################'''
 '''Printing Results of merging'''
 '''###########################'''
-	'''
+'''
 	org_seg = [430,405,...,150]							number of pure segments by author i, last one for mixed
-	'''
+'''
 	# calculating segments by each author
 org_seg		= [0 for i in range(number_books+1)]
 for i in range(number_seg):
@@ -90,7 +133,7 @@ print "Mixed   :",org_seg[-1]
 print "STEP 1 done"
 '''###########################'''
 '''Printing Results of merging'''
-'''###########################'''
+#################################
 
 '''##########Step 2##########'''
 '''Get pq-gram of merged data'''
@@ -103,10 +146,32 @@ print "STEP 1 done"
 						....
 						Number of segments
 					  ]
-	'''
-//Code
+'''
+folder 		= "../dataset/Parser/"+b[b_num]
+books_names = os.listdir(folder)
+merged_parser = []
+segments_parser = []
+parser_data 	= []
+count_sen 	= [0]*number_books
+for book in books_names:
+	path = os.path.join(folder,book)
+	f    = io.open(path, encoding="ISO-8859-1")
+	parser_data.append(f.readlines())
+for random in randoms:
+	size		  = random[0]
+	for i in range(number_books):
+		book_num	  = random[-1][i]
+		new_count_sen = count_sen[book_num] + min(size,number_sen[book_num]-count_sen[book_num])
+		for j in parser_data[book_num][ count_sen[book_num]:new_count_sen ]:
+			merged_parser.append( re.sub('[\r\n]','',j) )
+		count_sen[book_num]	= new_count_sen
+for i in range(number_seg):
+	start = seg_size*i
+	end = min(seg_size*(i+1),total_sen)
+	seg_data = merged_parser[start:end]
+	segments_parser.append(seg_data)
 
-###################STEP2##################
+'''################STEP3###############'''
 '''Find If given Segment is Pure or Mix'''
 ##########################################
 '''
@@ -125,7 +190,10 @@ for segment in segments_parser:
 
 # calculating similiarity index for each segment
 number_seg = len(segments_parser)
-for i in range(number_seg):
+score_true = Manager().list([])
+score_false= Manager().list([])
+def score_similiarity(i):
+	# print i
 	segment = segments_parser[i]
 	similiarity_index = 0
 	seg_size = len(segment)
@@ -135,11 +203,23 @@ for i in range(number_seg):
 			'''checking current pqgram is in how 
 			many other sentences of same segment'''
 			for k in range(j,seg_size):
-				sentence_size = len(segment[k])
 				if pq_gram in segment[k]:
-					similiarity_index += 1.0/(sentence_size[i][k]*sentence_size[i][k])
-	print similiarity_index
+					similiarity_index += 1.0/(sentence_size[i][j]*sentence_size[i][k])
+	for j in range(len(label_in_seg[i])):
+		print segments_sen[i][j].encode("ISO-8859-1"),label_in_seg[i][j]
+	print is_pure_seg[i],label_in_seg[i],similiarity_index
+	# sys.exit()
+	if is_pure_seg[i] == True:
+		score_true.append(similiarity_index)
+	else:
+		score_false.append(similiarity_index)
 	if similiarity_index > threshold:
 		pure_segments.append(segments_parser[i])
 	else:
 		mixed_segments.append(segments_parser[i])
+p = Pool(1)
+p.map(score_similiarity, range(number_seg))
+score_true.sort()
+score_false.sort()
+print score_true
+print score_false
