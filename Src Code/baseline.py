@@ -281,8 +281,8 @@ post_p_seg	 = posterior probability of each segment in each cluster
 			   	 number of clusters/books
 			   ]
 best_seg	 = 80% of post_p_seg for each cluster in same format
-			 = [ [[0.85,0.01,0.1,... number of books,0(segment number)], [segment 2],.... number of segmensin this cluster] cluster 1 
-			   	 [[0.85,0.01,0.1,... number of books,1(segment number)], [segment 2],.... number of segmensin this cluster] cluster 2 
+			 = [ [[0.85,0.01,0.1,... number of books,0(segment number)], [segment 2],.... number of segments in this cluster] cluster 1 
+			   	 [[0.85,0.01,0.1,... number of books,1(segment number)], [segment 2],.... number of segments in this cluster] cluster 2 
 			   	 ....
 			   	 number of clusters/books
 			   ]
