@@ -192,27 +192,16 @@ print "Step 2 done"
 '''Step 2'''
 '''######'''
 
-'''######################### STEP 4 ######################'''
-'''Find If given Segment is Pure or Mix USING PQ GRAM used'''
-#############################################################
+
+'''####################### STEP 3 ######################'''
+'''Find If given Segment is Pure or Mix USING WORDS used'''
+###########################################################
 '''
 Calculate Similiarity Index of Segment:
 	Higher Similiarity Index, Higher Pure
 '''
-'''
-pure_segments = ['segment1','segment2',.....]
-pure_data	  = ['sentence1','sentence2',.....]
-mixed_data	  = ['sentence1','sentence2',.....]
-'''
-
-# calculating sentence sizes in each segment
-sentence_size  = []
-for segment in segments_parser:
-	sentence_size.append([])
-	for sentence in segment:
-		sentence_size[-1].append(len(sentence))
-
-# calculating similiarity index for each segment
+n_gram_size_2 = 2
+threshold_2   = 2200
 number_seg 		= len(segments_parser)
 score_true 		= Manager().list([])
 score_false		= Manager().list([])
@@ -222,19 +211,15 @@ pure_data 		= Manager().list([])
 mixed_data		= Manager().list([])
 pure 			= Manager().list([])
 mixed 			= Manager().list([])
-def score_similiarity(i):
-	segment = segments_parser[i]
+def score_word_similiarity(i):
+	seg_model	= CV(binary = True, min_df=1, ngram_range=(1,n_gram_size_2), max_features=2000, lowercase=lowercase, tokenizer=tokenizer, token_pattern=token_pattern)
+	vec_seg 	= seg_model.fit_transform(segments_sen[i]).toarray()
 	similiarity_index = 0
-	seg_size = len(segment)
-	'''iterating over sentences in a segment'''
+	seg_size = len(segments_sen[i])
 	for j in range(seg_size):
-		for pq_gram in segment[j]:
-			'''checking current pqgram is in how 
-			many other sentences of same segment'''
-			for k in range(j,seg_size):
-				if pq_gram in segment[k]:
-					similiarity_index += 1.0/(sentence_size[i][j]*sentence_size[i][k])
-	if similiarity_index > threshold:
+		for k in range(j,seg_size):
+			similiarity_index += sum(x[0]*x[1] for x in zip(vec_seg[j],vec_seg[k]))
+	if similiarity_index > threshold_2:
 		pure_segments.append(segments[i])
 		pure_data.extend(segments_sen[i])
 	else:
@@ -242,57 +227,63 @@ def score_similiarity(i):
 		mixed_data.extend(segments_sen[i])
 	if is_pure_seg[i] == True:
 		score_true.append(similiarity_index)
-		if similiarity_index > threshold:
+		if similiarity_index > threshold_2:
 			pure.append(1)
 		else:
 			mixed.append(0)
 	else:
 		score_false.append(similiarity_index)
-		if similiarity_index > threshold:
+		if similiarity_index > threshold_2:
 			pure.append(0)
 		else:
 			mixed.append(1)
+
 p = Pool(processors)
-p.map(score_similiarity, range(number_seg))
+p.map(score_word_similiarity, range(number_seg))
+score_true.sort()
+score_false.sort()
+print score_true
+print score_false
 print "Accuracy Initial",float(sum(org_seg)-org_seg[-1])/sum(org_seg),sum(org_seg)
 print "Accuracy Final",pure.count(1),float(pure.count(1))/len(pure),len(pure)
-print "Step 4 done"
+
+print "Step 3 done"
 '''######'''
-'''Step 4'''
+'''Step 3'''
 '''######'''
 
 '''################## STEP ** #################'''
 '''Plotting Graph for finding optimum threshold'''
 ##################################################
 
-def plot_graph():
+def plot_word_graph():
 	global score_true,score_false
 	accuracies = []
 	n_pure = []
 	data_size = []
 	fig, ax = plt.subplots()
 	axes = [ax, ax.twinx()]
-	for thr in range(20,210):
+	for thr in range(1500,2500):
+		print thr
 		mixed = []
 		pure  = []
-		threshold = float(thr)/100
+		threshold = float(thr)/1
 		for similiarity_index in score_true:
-			if similiarity_index > threshold:
+			if similiarity_index > thr:
 				pure.append(1)
 			else:
 				mixed.append(0)
 		for similiarity_index in score_false:
-			if similiarity_index > threshold:
+			if similiarity_index > thr:
 				pure.append(0)
 			else:
 				mixed.append(1)
-		# print thr,"Accuracy Final",pure_segments.count(1),float(pure_segments.count(1))/len(pure_segments),len(pure_segments)
 		accuracies.append(float(pure.count(1)*100)/len(pure))
 		n_pure.append(pure.count(1))
 		data_size.append(len(pure))
 
-	base = np.array([float(x)/100 for x in range(20,210)])
-	thr = np.linspace(base.min(),base.max(),500)
+	base = np.array([float(x)/1 for x in range(1500,2500)])
+	thr = np.linspace(base.min(),base.max(),2000)
 	accuracies_smooth = spline(base,accuracies,thr)
 	n_pure_smooth = spline(base,n_pure,thr)
 	data_size_smooth = spline(base,data_size,thr)
@@ -301,11 +292,10 @@ def plot_graph():
 	axes[0].plot(thr,data_size_smooth,'g')
 	plt.show()
 if do_plot == 1:
-	plot_graph()
+	plot_word_graph()
 '''#######'''
 '''Step **'''
 '''#######'''
-
 
 '''##############################################'''
 '''################## Step 5 ####################'''
