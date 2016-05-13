@@ -164,7 +164,7 @@ print "STEP 1 done"
 						Number of segments
 					  ]
 '''
-folder 		= "../dataset/Parser/"+b[b_num]
+folder 		= "../../dataset/Parser/"+b[b_num]
 books_names = os.listdir(folder)
 merged_parser = []
 segments_parser = []
@@ -313,56 +313,56 @@ mixed_data	  = ['sentence1','sentence2',.....]
 '''
 
 # calculating sentence sizes in each segment
-# sentence_size  = []
-# for segment in segments_parser:
-# 	sentence_size.append([])
-# 	for sentence in segment:
-# 		sentence_size[-1].append(len(sentence))
+sentence_size  = []
+for segment in segments_parser:
+	sentence_size.append([])
+	for sentence in segment:
+		sentence_size[-1].append(len(sentence))
 
-# # calculating similiarity index for each segment
-# number_seg 		= len(segments_parser)
-# score_true 		= Manager().list([])
-# score_false		= Manager().list([])
-# mixed_segments 	= Manager().list([])
-# pure_segments  	= Manager().list([])
-# pure_data 		= Manager().list([])
-# mixed_data		= Manager().list([])
-# pure 			= Manager().list([])
-# mixed 			= Manager().list([])
-# def score_similiarity(i):
-# 	segment = segments_parser[i]
-# 	similiarity_index = 0
-# 	seg_size = len(segment)
-# 	'''iterating over sentences in a segment'''
-# 	for j in range(seg_size):
-# 		for pq_gram in segment[j]:
-# 			'''checking current pqgram is in how 
-# 			many other sentences of same segment'''
-# 			for k in range(j,seg_size):
-# 				if pq_gram in segment[k]:
-# 					similiarity_index += 1.0/(sentence_size[i][j]*sentence_size[i][k])
-# 	if similiarity_index > threshold:
-# 		pure_segments.append(segments[i])
-# 		pure_data.extend(segments_sen[i])
-# 	else:
-# 		mixed_segments.append(segments[i])
-# 		mixed_data.extend(segments_sen[i])
-# 	if is_pure_seg[i] == True:
-# 		score_true.append(similiarity_index)
-# 		if similiarity_index > threshold:
-# 			pure.append(1)
-# 		else:
-# 			mixed.append(0)
-# 	else:
-# 		score_false.append(similiarity_index)
-# 		if similiarity_index > threshold:
-# 			pure.append(0)
-# 		else:
-# 			mixed.append(1)
-# p = Pool(processors)
-# p.map(score_similiarity, range(number_seg))
-# print "Accuracy Initial",float(sum(org_seg)-org_seg[-1])/sum(org_seg),sum(org_seg)
-# print "Accuracy Final",pure.count(1),float(pure.count(1))/len(pure),len(pure)
+# calculating similiarity index for each segment
+number_seg 		= len(segments_parser)
+score_true 		= Manager().list([])
+score_false		= Manager().list([])
+mixed_segments 	= Manager().list([])
+pure_segments  	= Manager().list([])
+pure_data 		= Manager().list([])
+mixed_data		= Manager().list([])
+pure 			= Manager().list([])
+mixed 			= Manager().list([])
+def score_similiarity(i):
+	segment = segments_parser[i]
+	similiarity_index = 0
+	seg_size = len(segment)
+	'''iterating over sentences in a segment'''
+	for j in range(seg_size):
+		for pq_gram in segment[j]:
+			'''checking current pqgram is in how 
+			many other sentences of same segment'''
+			for k in range(j,seg_size):
+				if pq_gram in segment[k]:
+					similiarity_index += 1.0/(sentence_size[i][j]*sentence_size[i][k])
+	if similiarity_index > threshold:
+		pure_segments.append(segments[i])
+		pure_data.extend(segments_sen[i])
+	else:
+		mixed_segments.append(segments[i])
+		mixed_data.extend(segments_sen[i])
+	if is_pure_seg[i] == True:
+		score_true.append(similiarity_index)
+		if similiarity_index > threshold:
+			pure.append(1)
+		else:
+			mixed.append(0)
+	else:
+		score_false.append(similiarity_index)
+		if similiarity_index > threshold:
+			pure.append(0)
+		else:
+			mixed.append(1)
+p = Pool(processors)
+p.map(score_similiarity, range(number_seg))
+print "Accuracy Initial",float(sum(org_seg)-org_seg[-1])/sum(org_seg),sum(org_seg)
+print "Accuracy Final",pure.count(1),float(pure.count(1))/len(pure),len(pure)
 print "Step 4 done"
 '''######'''
 '''Step 4'''
