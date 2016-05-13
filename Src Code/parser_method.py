@@ -35,7 +35,7 @@ print "Import Done"
 '''############################'''
 '''#####Defining Variables#####'''
 ##################################
-V 		  = 50
+V 		  = 200
 b_num     = 0
 b = ["Becker-Posner","GC-TF-PK","MD-TF-PK","MD-GC-PK","MD-GC-TF-PK"]
 gmm_initialisation = 5
@@ -199,8 +199,8 @@ print "Step 2 done"
 Calculate Similiarity Index of Segment:
 	Higher Similiarity Index, Higher Pure
 '''
-n_gram_size_2 = 1
-threshold_2   = 2000
+n_gram_size_2 = 2
+threshold_2   = 2200
 number_seg 		= len(segments_parser)
 score_true 		= Manager().list([])
 score_false		= Manager().list([])
@@ -211,7 +211,7 @@ mixed_data		= Manager().list([])
 pure 			= Manager().list([])
 mixed 			= Manager().list([])
 def score_word_similiarity(i):
-	seg_model	= CV(binary = True, min_df=2, ngram_range=(1,n_gram_size_2), max_features=5000, lowercase=lowercase, tokenizer=tokenizer, token_pattern=token_pattern)
+	seg_model	= CV(binary = True, min_df=1, ngram_range=(1,n_gram_size_2), max_features=2000, lowercase=lowercase, tokenizer=tokenizer, token_pattern=token_pattern)
 	vec_seg 	= seg_model.fit_transform(segments_sen[i]).toarray()
 	similiarity_index = 0
 	seg_size = len(segments_sen[i])
@@ -290,7 +290,7 @@ def plot_word_graph():
 	axes[0].plot(thr,n_pure_smooth,'b')
 	axes[0].plot(thr,data_size_smooth,'g')
 	plt.show()
-if do_plot == 1:
+if do_plot == 0:
 	plot_word_graph()
 '''#######'''
 '''Step **'''
