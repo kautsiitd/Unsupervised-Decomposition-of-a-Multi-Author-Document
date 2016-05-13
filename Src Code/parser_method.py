@@ -23,6 +23,8 @@ import itertools
 import numpy as np
 from multiprocessing import Pool
 from multiprocessing import Manager
+import matplotlib.pyplot as plt
+from scipy.interpolate import spline
 # from pos_tag import pos_tagging
 # from pq_gram import find_pq_grams
 print "Import Done"
@@ -197,11 +199,103 @@ print "Step 2 done"
 Calculate Similiarity Index of Segment:
 	Higher Similiarity Index, Higher Pure
 '''
-# Code
+n_gram_size_2 = 1
+threshold_2   = 2000
+number_seg 		= len(segments_parser)
+score_true 		= Manager().list([])
+score_false		= Manager().list([])
+mixed_segments 	= Manager().list([])
+pure_segments  	= Manager().list([])
+pure_data 		= Manager().list([])
+mixed_data		= Manager().list([])
+pure 			= Manager().list([])
+mixed 			= Manager().list([])
+def score_word_similiarity(i):
+	seg_model	= CV(binary = True, min_df=2, ngram_range=(1,n_gram_size_2), max_features=5000, lowercase=lowercase, tokenizer=tokenizer, token_pattern=token_pattern)
+	vec_seg 	= seg_model.fit_transform(segments_sen[i]).toarray()
+	similiarity_index = 0
+	seg_size = len(segments_sen[i])
+	for j in range(seg_size):
+		for k in range(j,seg_size):
+			similiarity_index += sum(x[0]*x[1] for x in zip(vec_seg[j],vec_seg[k]))
+	if similiarity_index > threshold_2:
+		pure_segments.append(segments[i])
+		pure_data.extend(segments_sen[i])
+	else:
+		mixed_segments.append(segments[i])
+		mixed_data.extend(segments_sen[i])
+	if is_pure_seg[i] == True:
+		score_true.append(similiarity_index)
+		if similiarity_index > threshold_2:
+			pure.append(1)
+		else:
+			mixed.append(0)
+	else:
+		score_false.append(similiarity_index)
+		if similiarity_index > threshold_2:
+			pure.append(0)
+		else:
+			mixed.append(1)
+
+p = Pool(8)
+p.map(score_word_similiarity, range(number_seg))
+score_true.sort()
+score_false.sort()
+print score_true
+print score_false
+print "Accuracy Initial",float(sum(org_seg)-org_seg[-1])/sum(org_seg),sum(org_seg)
+print "Accuracy Final",pure.count(1),float(pure.count(1))/len(pure),len(pure)
+
 print "Step 3 done"
 '''######'''
 '''Step 3'''
 '''######'''
+
+'''################## STEP ** #################'''
+'''Plotting Graph for finding optimum threshold'''
+##################################################
+
+def plot_word_graph():
+	global score_true,score_false
+	accuracies = []
+	n_pure = []
+	data_size = []
+	fig, ax = plt.subplots()
+	axes = [ax, ax.twinx()]
+	for thr in range(1500,2500):
+		print thr
+		mixed = []
+		pure  = []
+		threshold = float(thr)/1
+		for similiarity_index in score_true:
+			if similiarity_index > thr:
+				pure.append(1)
+			else:
+				mixed.append(0)
+		for similiarity_index in score_false:
+			if similiarity_index > thr:
+				pure.append(0)
+			else:
+				mixed.append(1)
+		accuracies.append(float(pure.count(1)*100)/len(pure))
+		n_pure.append(pure.count(1))
+		data_size.append(len(pure))
+
+	base = np.array([float(x)/1 for x in range(1500,2500)])
+	thr = np.linspace(base.min(),base.max(),2000)
+	accuracies_smooth = spline(base,accuracies,thr)
+	n_pure_smooth = spline(base,n_pure,thr)
+	data_size_smooth = spline(base,data_size,thr)
+	axes[1].plot(thr,accuracies_smooth,'r')
+	axes[0].plot(thr,n_pure_smooth,'b')
+	axes[0].plot(thr,data_size_smooth,'g')
+	plt.show()
+if do_plot == 1:
+	plot_word_graph()
+'''#######'''
+'''Step **'''
+'''#######'''
+# sys.exit()
 
 
 '''######################### STEP 4 ######################'''
@@ -218,56 +312,56 @@ mixed_data	  = ['sentence1','sentence2',.....]
 '''
 
 # calculating sentence sizes in each segment
-sentence_size  = []
-for segment in segments_parser:
-	sentence_size.append([])
-	for sentence in segment:
-		sentence_size[-1].append(len(sentence))
+# sentence_size  = []
+# for segment in segments_parser:
+# 	sentence_size.append([])
+# 	for sentence in segment:
+# 		sentence_size[-1].append(len(sentence))
 
-# calculating similiarity index for each segment
-number_seg 		= len(segments_parser)
-score_true 		= Manager().list([])
-score_false		= Manager().list([])
-mixed_segments 	= Manager().list([])
-pure_segments  	= Manager().list([])
-pure_data 		= Manager().list([])
-mixed_data		= Manager().list([])
-pure 			= Manager().list([])
-mixed 			= Manager().list([])
-def score_similiarity(i):
-	segment = segments_parser[i]
-	similiarity_index = 0
-	seg_size = len(segment)
-	'''iterating over sentences in a segment'''
-	for j in range(seg_size):
-		for pq_gram in segment[j]:
-			'''checking current pqgram is in how 
-			many other sentences of same segment'''
-			for k in range(j,seg_size):
-				if pq_gram in segment[k]:
-					similiarity_index += 1.0/(sentence_size[i][j]*sentence_size[i][k])
-	if similiarity_index > threshold:
-		pure_segments.append(segments[i])
-		pure_data.extend(segments_sen[i])
-	else:
-		mixed_segments.append(segments[i])
-		mixed_data.extend(segments_sen[i])
-	if is_pure_seg[i] == True:
-		score_true.append(similiarity_index)
-		if similiarity_index > threshold:
-			pure.append(1)
-		else:
-			mixed.append(0)
-	else:
-		score_false.append(similiarity_index)
-		if similiarity_index > threshold:
-			pure.append(0)
-		else:
-			mixed.append(1)
-p = Pool(8)
-p.map(score_similiarity, range(number_seg))
-print "Accuracy Initial",float(sum(org_seg)-org_seg[-1])/sum(org_seg),sum(org_seg)
-print "Accuracy Final",pure.count(1),float(pure.count(1))/len(pure),len(pure)
+# # calculating similiarity index for each segment
+# number_seg 		= len(segments_parser)
+# score_true 		= Manager().list([])
+# score_false		= Manager().list([])
+# mixed_segments 	= Manager().list([])
+# pure_segments  	= Manager().list([])
+# pure_data 		= Manager().list([])
+# mixed_data		= Manager().list([])
+# pure 			= Manager().list([])
+# mixed 			= Manager().list([])
+# def score_similiarity(i):
+# 	segment = segments_parser[i]
+# 	similiarity_index = 0
+# 	seg_size = len(segment)
+# 	'''iterating over sentences in a segment'''
+# 	for j in range(seg_size):
+# 		for pq_gram in segment[j]:
+# 			'''checking current pqgram is in how 
+# 			many other sentences of same segment'''
+# 			for k in range(j,seg_size):
+# 				if pq_gram in segment[k]:
+# 					similiarity_index += 1.0/(sentence_size[i][j]*sentence_size[i][k])
+# 	if similiarity_index > threshold:
+# 		pure_segments.append(segments[i])
+# 		pure_data.extend(segments_sen[i])
+# 	else:
+# 		mixed_segments.append(segments[i])
+# 		mixed_data.extend(segments_sen[i])
+# 	if is_pure_seg[i] == True:
+# 		score_true.append(similiarity_index)
+# 		if similiarity_index > threshold:
+# 			pure.append(1)
+# 		else:
+# 			mixed.append(0)
+# 	else:
+# 		score_false.append(similiarity_index)
+# 		if similiarity_index > threshold:
+# 			pure.append(0)
+# 		else:
+# 			mixed.append(1)
+# p = Pool(8)
+# p.map(score_similiarity, range(number_seg))
+# print "Accuracy Initial",float(sum(org_seg)-org_seg[-1])/sum(org_seg),sum(org_seg)
+# print "Accuracy Final",pure.count(1),float(pure.count(1))/len(pure),len(pure)
 print "Step 4 done"
 '''######'''
 '''Step 4'''
@@ -276,8 +370,6 @@ print "Step 4 done"
 '''################## STEP ** #################'''
 '''Plotting Graph for finding optimum threshold'''
 ##################################################
-import matplotlib.pyplot as plt
-from scipy.interpolate import spline
 
 def plot_graph():
 	global score_true,score_false
