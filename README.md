@@ -3,17 +3,17 @@
 ----------------------------------
 In this project we decompose a Multi-Author-Document in individua Authoral components sentencewise, using NLP and ML techniques.
 ## Requirements
-python (>2.7.11)
-scikit-learn
-nltk
-numpy
+python (>2.7.11)<br />
+scikit-learn<br />
+nltk<br />
+numpy<br />
 ## Usage
 ### Baseline
-python Src\ Code/baseline.py
+python Src\ Code/baseline.py<br />
 ### Improvements
-python Src\ Code/Our\ Methods/words_method.py
-python Src\ Code/Our\ Methods/parser_method.py
-python Src\ Code/Our\ Methods/hybrid_words_parser_method.py
+python Src\ Code/Our\ Methods/words_method.py<br />
+python Src\ Code/Our\ Methods/parser_method.py<br />
+python Src\ Code/Our\ Methods/hybrid_words_parser_method.py<br />
 ## Contributing
 1. Fork it!
 2. Create your feature branch: git checkout -b my-new-feature
