@@ -8,9 +8,9 @@ scikit-learn<br />
 nltk<br />
 numpy<br />
 ## Usage
-### Baseline
+#### Baseline
 python Src\ Code/baseline.py<br />
-### Improvements
+#### Improvements
 python Src\ Code/Our\ Methods/words_method.py<br />
 python Src\ Code/Our\ Methods/parser_method.py<br />
 python Src\ Code/Our\ Methods/hybrid_words_parser_method.py<br />
