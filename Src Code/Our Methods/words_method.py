@@ -57,6 +57,8 @@ threshold = 1.0
 do_plot = 0
 	# Whether or not comparte with baseline results
 ignore_baseline = 0
+	# threshold for trusted sentence
+trus_thrs = .95
 
 '''############################'''
 '''#####Defining Variables#####'''
@@ -553,14 +555,80 @@ print "STEP 10 done"
 '''################################################################'''
 test_size = len(merged_data)
 vec_sen = model2.transform(merged_data[:test_size])
-temp = model3.predict_proba(vec_sen)
-predicted = [map(lambda x: (x),temp[i]).index(max(temp[i])) for i in range(test_size)]
+auth_proba = model3.predict_proba(vec_sen)
+predicted = [map(lambda x: (x),auth_proba[i]).index(max(auth_proba[i])) for i in range(test_size)]
 org_label = label_sen[:test_size]
 print model3.score(vec_sen, org_label)
 print "STEP 11 done"
 '''#######'''
 '''Step 11'''
 '''#######'''
+
+'''#########################################'''
+'''################Step 12##################'''
+'''Applying Probability Indication Procedure'''
+'''#########################################'''
+	# Rule 1
+is_trusted = []
+for i in range(test_size):
+	temp = sorted(auth_proba[i])
+	if(temp[-1]-temp[-2] > trus_thrs):
+		is_trusted.append(predicted[i])
+	else:
+		is_trusted.append(-1)
+
+	# Rule 2
+if(is_trusted[0] == -1):
+	for i in range(1,test_size):
+		if(is_trusted[i] != -1):
+			is_trusted[0] = is_trusted[i]
+			break
+	if(is_trusted[0] == -1):
+		is_trusted[0] = map(lambda x: (x),auth_proba[0]).index(max(auth_proba[0]))
+
+	# Rule 3
+if(is_trusted[-1] == -1):
+	for i in range(test_size-1, -1, -1):
+		if(is_trusted[i] != -1):
+			is_trusted[-1] = is_trusted[i]
+			break
+	if(is_trusted[-1] == -1):
+		is_trusted[-1] = map(lambda x: (x),auth_proba[-1]).index(max(auth_proba[-1]))
+
+	# Rule 4 & 5
+before_label = -1
+for i in range(test_size):
+	if(is_trusted[i] != -1):
+		before_label = is_trusted[i]
+	else:
+		after_label = -1
+		start = i
+		end = i
+		while(i < test_size):
+			i += 1
+			if(is_trusted[i] != -1):
+				after_label = is_trusted[i]
+				end = i
+				break
+		if(before_label == after_label):
+			for j in range(start,end):
+				is_trusted[j] = before_label
+		else:
+			for j in range(start,(start+end)/2):
+				is_trusted[j] = before_label
+			for j in range((start+end)/2,end):
+				is_trusted[j] = after_label
+print "STEP 12 done"
+'''######'''
+'''Step 12'''
+'''######'''
+
+	# Checking New Score
+correct = 0
+for i in range(test_size):
+	if(org_label[i] == is_trusted[i]):
+		correct += 1
+print "New Accuracy:",float(correct*100)/test_size,"%"
 
 if ignore_baseline == 0:
 	'''#########################################'''
@@ -803,8 +871,8 @@ if ignore_baseline == 0:
 	'''################################################################'''
 	test_size = len(merged_data)
 	vec_sen = model2.transform(merged_data[:test_size])
-	temp = model3.predict_proba(vec_sen)
-	predicted = [map(lambda x: (x),temp[i]).index(max(temp[i])) for i in range(test_size)]
+	auth_proba = model3.predict_proba(vec_sen)
+	predicted = [map(lambda x: (x),auth_proba[i]).index(max(auth_proba[i])) for i in range(test_size)]
 	org_label = label_sen[:test_size]
 	print model3.score(vec_sen, org_label)
 	print "STEP 8 done"
@@ -816,3 +884,64 @@ if ignore_baseline == 0:
 	'''################Step 9###################'''
 	'''Applying Probability Indication Procedure'''
 	'''#########################################'''
+		# Rule 1
+	is_trusted = []
+	for i in range(test_size):
+		temp = sorted(auth_proba[i])
+		if(temp[-1]-temp[-2] > trus_thrs):
+			is_trusted.append(predicted[i])
+		else:
+			is_trusted.append(-1)
+
+		# Rule 2
+	if(is_trusted[0] == -1):
+		for i in range(1,test_size):
+			if(is_trusted[i] != -1):
+				is_trusted[0] = is_trusted[i]
+				break
+		if(is_trusted[0] == -1):
+			is_trusted[0] = map(lambda x: (x),auth_proba[0]).index(max(auth_proba[0]))
+
+		# Rule 3
+	if(is_trusted[-1] == -1):
+		for i in range(test_size-1, -1, -1):
+			if(is_trusted[i] != -1):
+				is_trusted[-1] = is_trusted[i]
+				break
+		if(is_trusted[-1] == -1):
+			is_trusted[-1] = map(lambda x: (x),auth_proba[-1]).index(max(auth_proba[-1]))
+
+		# Rule 4 & 5
+	before_label = -1
+	for i in range(test_size):
+		if(is_trusted[i] != -1):
+			before_label = is_trusted[i]
+		else:
+			after_label = -1
+			start = i
+			end = i
+			while(i < test_size):
+				i += 1
+				if(is_trusted[i] != -1):
+					after_label = is_trusted[i]
+					end = i
+					break
+			if(before_label == after_label):
+				for j in range(start,end):
+					is_trusted[j] = before_label
+			else:
+				for j in range(start,(start+end)/2):
+					is_trusted[j] = before_label
+				for j in range((start+end)/2,end):
+					is_trusted[j] = after_label
+	print "STEP 9 done"
+	'''######'''
+	'''Step 9'''
+	'''######'''
+
+		# Checking New Score
+	correct = 0
+	for i in range(test_size):
+		if(org_label[i] == is_trusted[i]):
+			correct += 1
+	print "New Accuracy:",float(correct*100)/test_size,"%"

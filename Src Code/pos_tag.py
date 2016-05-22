@@ -14,7 +14,7 @@ from nltk.tag import StanfordPOSTagger
 # os.system("export STANFORDTOOLSDIR=$HOME/Desktop/Unsupervised-Decomposition-of-a-Multi-Author-Document")
 # os.system("export CLASSPATH=$STANFORDTOOLSDIR/stanford-postagger-2015-12-09/stanford-postagger.jar:$STANFORDTOOLSDIR/stanford-postagger-2015-12-09/models")
 
-st = StanfordPOSTagger('/home/dell/Desktop/Unsupervised-Decomposition-of-a-Multi-Author-Document/stanford-postagger-2015-12-09/models/english-bidirectional-distsim.tagger')
+st = StanfordPOSTagger('/home/kauts/Desktop/Unsupervised-Decomposition-of-a-Multi-Author-Document/Dependencies/stanford-postagger-2015-12-09/models/english-bidirectional-distsim.tagger')
 
 
 '''Tag all the sentences in list and return list of tagged sentences'''

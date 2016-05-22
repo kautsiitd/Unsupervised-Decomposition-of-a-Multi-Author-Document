@@ -1,4 +1,4 @@
-%File: formatting-instruction.tex
+	%File: formatting-instruction.tex
 \documentclass[letterpaper]{article}
 \usepackage{graphicx}
 \usepackage{float}
@@ -26,7 +26,7 @@ Indian Institute of Technology Delhi\\
 
  \begin{abstract}
  \begin{quote}
- This paper proposes an improvement over an recent work by 
+This paper proposes an improvement over a recent $paper^{[1]}$. We have worked on two aspects, In the first aspect, we try to capture writing style of author by n-gram model of words, POS Tags and PQ Gram model of syntactic parsing over used basic uni-gram model. In the second aspect, we added some layers of refinements in existing baseline model and introduce new term "similarity index" to distinguish between pure and mixed segments before unsupervised labeling. Similarity index uses overall and sudden change of writing style by PQ Gram model and words used using n-gram model between lexicalised/unlexicalised sentences in segments for refinement. 
 In this paper, we investigate the role of feature  selection  that captures the syntactic patterns specific to an author and its overall effect in the final accuracy of the baseline system. More specifically, we insert a layer of refinement to the baseline system and define a threshold based on the similarity measure among the sentences to consider the purity of the segments to be given as input to the GMM.The key idea of our approach is to provide the GMM clustering with the "good segments" so that the clustering precision is maximised which is then used as labels to train a classifier. We also try different features set like bigrams and trigrams of POS tags and an PQ Grams based feature on unlexicalised PCFG to capture the distinct writing styles which is then given as an input to a GMM trained by  iterative EM algorithm to generate good clusters of the segments of the merged document.
  \end{quote}
  \end{abstract}
@@ -45,13 +45,15 @@ The traditional studies on text segmentation, as shown in Choi (2000), Brants et
 % \item Check every page of your paper before submitting it.
 % \end{itemize}
 
-\section{Baseline}
-The latest state of the art technique used in this area is described below:
-Given a multi-author document written by \textit{l} authors, it is assumed that every author has written consecutive sentences, and every sentence is completely written by only one of the authors. The approach goes through the following steps:
+\section{Modified Baseline}
+After modifying the latest state of the art technique used is described below:
+Given a multi-author document written by \textit{l} authors, it is assumed that every sentence is completely written by only one of the authors. The approach goes through the following steps:
 \begin{itemize}
 \item Divide the document into segments of fixed length.
-\item Represent the resulted segments as vectors using an appropriate feature set which can differentiate the writing styles among authors (words occurring at least 3 times in the text).
-\item Cluster the resulted vectors into l clusters using an appropriate clustering algorithm targeting on high recall rates(GMM with iterative EM algorithm).
+\item Represent each sentence inside a segment as vectors using n-grams of words and pq grams as feature set.
+\item Separate pure and mixed segments by analyzing sudden change in writing style or words used between sentences inside a segment using "similarity index" of segment.
+\item Represent the resulted pure segments as vectors using an appropriate feature set(Words, POS Tags, PQ Grams) in whole merged document which can differentiate the writing styles among authors.
+\item Cluster the resulted vectors into \itemit{l} clusters using an appropriate clustering algorithm targeting on high recall rates(GMM with iterative EM algorithm).
 \item Re-vectorize the segments using a different feature set to more accurately discriminate the segments in each cluster.
 \item Apply the segment Elicitation procedure, which identifies the vital segments from each clusters to improve the precision rates.
 \item Re-vectorize all selected segments using another feature set that can capture the differences in the writing styles of all the sentences in a document.
