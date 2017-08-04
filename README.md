@@ -1,12 +1,18 @@
 # Unsupervised-Decomposition-of-a-Multi-Author-Document
-![alt tag](https://github.com/kautsiitd/Unsupervised-Decomposition-of-a-Multi-Author-Document/blob/master/Images/Readme.png)
-----------------------------------
-In this project we decompose a Multi-Author-Document in individua Authoral components sentencewise, using NLP and ML techniques.
+
+<p align="center">
+<img src="Images/Readme.png">
+</p>
+
+In this project we decompose a Multi-Author-Document in individual Authorial components sentence-wise, using NLP and ML techniques.
+
 ## Requirements
-python (>2.7.11)<br />
-scikit-learn<br />
-nltk<br />
-numpy<br />
+
+  * python (>2.7.11)
+  * scikit-learn
+  * nltk
+  * numpy
+
 ## Usage
 #### Baseline
 python Src\ Code/baseline.py<br />
