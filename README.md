@@ -1,6 +1,6 @@
 # Unsupervised Decomposition of Multi-Author Documents
 
-This repository contains the research paper and code for an NLP project on **unsupervised author segmentation in multi-author documents**, conducted at the Indian Institute of Technology Delhi.
+This repository contains the research paper and code for an NLP project on **unsupervised author segmentation in multi-author documents**, conducted at the Indian Institute of Technology Delhi under the supervision of Prof. Mausam.
 
 <p align="center">
 <img src="Images/Readme.png">
@@ -76,14 +76,6 @@ My primary contributions to this work:
 - Implemented and evaluated the hypothesis that training the GMM on filtered "pure" segments (rather than all segments) improves classifier reliability
 - Led the writing of the paper, under the guidance of co-author Sayantan Sengupta (a prospective Ph.D. student under Prof. Mausam at the time)
 
-## References
-
-- Akiva, N., & Koppel, M. (2013). A generic unsupervised method for decomposing multi-author documents.
-- Aldebei, K., He, X., & Yang, J. Unsupervised Decomposition of a Multi-Author Document Based on Naive-Bayesian Model. *ACL*.
-- Tschuggnall, M., & Specht, G. Automatic Decomposition of Multi-Author Documents Using Grammar Analysis. University of Innsbruck.
-
-See the [paper](./paper.pdf) for the full reference list.
-
 ## Requirements
 
   * python (>2.7.11)
@@ -100,6 +92,14 @@ python Src\ Code/baseline.py<br />
 python Src\ Code/Our\ Methods/words_method.py<br />
 python Src\ Code/Our\ Methods/parser_method.py<br />
 python Src\ Code/Our\ Methods/hybrid_words_parser_method.py<br />
+
+## References
+
+- Akiva, N., & Koppel, M. (2013). A generic unsupervised method for decomposing multi-author documents.
+- Aldebei, K., He, X., & Yang, J. Unsupervised Decomposition of a Multi-Author Document Based on Naive-Bayesian Model. *ACL*.
+- Tschuggnall, M., & Specht, G. Automatic Decomposition of Multi-Author Documents Using Grammar Analysis. University of Innsbruck.
+
+See the [paper](./paper.pdf) for the full reference list.
 
 ## Citation
 
