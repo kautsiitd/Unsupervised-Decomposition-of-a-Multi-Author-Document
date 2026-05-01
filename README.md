@@ -14,7 +14,7 @@ This repository contains the research paper and code for an NLP project on **uns
 
 **Context:** Research conducted under the guidance of [Prof. Mausam](https://www.cse.iitd.ac.in/~mausam/) as part of the COL 772 (Natural Language Processing) graduate course at IIT Delhi, 2016. Made available as a preprint in 2019.
 
-📄 **Read the paper:** [paper.pdf](./paper.pdf)
+📄 **Read the paper:** [Paper.pdf](./Paper.pdf)
 
 ## Problem
 
