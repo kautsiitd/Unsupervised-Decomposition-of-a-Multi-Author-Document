@@ -12,7 +12,7 @@ This repository contains the research paper and code for an NLP project on **uns
 
 **Authors:** Kautsya Kanu, Sayantan Sengupta
 
-**Context:** Research conducted under the guidance of [Prof. Mausam](https://www.cse.iitd.ac.in/~mausam/) as part of the COL 772 (Natural Language Processing) graduate course at IIT Delhi, 2016. Made available as a preprint in 2019.
+**Context:** Research conducted under the guidance of [Prof. Mausam](https://www.cse.iitd.ac.in/~mausam/) as part of the COL 772 (Natural Language Processing) graduate course at IIT Delhi, 2016. Made available as a [preprint](https://www.semanticscholar.org/paper/Unsupervised-Decomposition-of-Multi-Author-the-of-Kanu-Sengupta/b67079ae2c888bc1ea87dc94628c713c86f2aad9) in 2019.
 
 📄 **Read the paper:** [Paper.pdf](./Paper.pdf)
 
