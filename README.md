@@ -3,7 +3,7 @@
 This repository contains the research paper and code for an NLP project on **unsupervised author segmentation in multi-author documents**, conducted at the Indian Institute of Technology Delhi under the supervision of Prof. Mausam.
 
 <p align="center">
-<img src="Images/Readme.png">
+<img src="Images/Pipeline.svg">
 </p>
 
 ## Paper
