@@ -5,6 +5,7 @@
 </p>
 
 In this project we decompose a Multi-Author-Document in individual Authorial components sentence-wise, using NLP and ML techniques.
+**Note:** This project was completed in 2016 using Python 2.7 and the dependencies of that era. The code is preserved in its original form
 
 ## Requirements
 
