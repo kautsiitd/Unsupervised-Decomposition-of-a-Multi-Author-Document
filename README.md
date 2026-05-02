@@ -99,7 +99,7 @@ python Src\ Code/Our\ Methods/hybrid_words_parser_method.py<br />
 - Aldebei, K., He, X., & Yang, J. Unsupervised Decomposition of a Multi-Author Document Based on Naive-Bayesian Model. *ACL*.
 - Tschuggnall, M., & Specht, G. Automatic Decomposition of Multi-Author Documents Using Grammar Analysis. University of Innsbruck.
 
-See the [paper](./paper.pdf) for the full reference list.
+See the [paper](./Paper.pdf) for the full reference list.
 
 ## Citation
 
